@@ -1,0 +1,973 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>单词连线练习</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #182026;
+      --muted: #607080;
+      --line: #d7dee5;
+      --panel: #ffffff;
+      --soft: #f3f6f8;
+      --brand: #0f7b6c;
+      --brand-dark: #095f53;
+      --accent: #e4572e;
+      --good: #148c5a;
+      --bad: #c43830;
+      --shadow: 0 18px 48px rgba(20, 34, 45, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 0 0, rgba(15, 123, 108, 0.18), transparent 32rem),
+        linear-gradient(135deg, #fbf7ef 0%, #edf5f2 48%, #f7f8fb 100%);
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .app {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: end;
+      margin-bottom: 18px;
+    }
+
+    .title-block h1 {
+      margin: 0;
+      font-size: clamp(30px, 5vw, 56px);
+      line-height: 1.02;
+      letter-spacing: 0;
+    }
+
+    .title-block p {
+      max-width: 680px;
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    .scoreboard {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(78px, 1fr));
+      gap: 8px;
+      min-width: 292px;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.82);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .score {
+      padding: 10px 12px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .score span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .score strong {
+      display: block;
+      margin-top: 3px;
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: auto minmax(180px, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 14px;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.76);
+      border: 1px solid rgba(255, 255, 255, 0.84);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      background: var(--soft);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .tab {
+      min-height: 38px;
+      padding: 0 14px;
+      color: var(--muted);
+      background: transparent;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    .tab.active {
+      color: #fff;
+      background: var(--brand);
+      box-shadow: 0 8px 18px rgba(15, 123, 108, 0.22);
+    }
+
+    .select-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .select-wrap label {
+      color: var(--muted);
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    select {
+      width: min(280px, 100%);
+      min-height: 40px;
+      padding: 0 12px;
+      color: var(--ink);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .tools {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .icon-button,
+    .primary-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      border-radius: 8px;
+      transition: transform 0.16s ease, background 0.16s ease, border-color 0.16s ease;
+    }
+
+    .icon-button {
+      width: 42px;
+      color: var(--ink);
+      background: var(--panel);
+      border: 1px solid var(--line);
+    }
+
+    .primary-button {
+      padding: 0 16px;
+      color: #fff;
+      background: var(--brand);
+      gap: 8px;
+    }
+
+    .icon-button:hover,
+    .primary-button:hover {
+      transform: translateY(-1px);
+    }
+
+    .primary-button:hover {
+      background: var(--brand-dark);
+    }
+
+    .workspace {
+      min-height: 560px;
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.86);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      backdrop-filter: blur(16px);
+    }
+
+    .mode {
+      display: none;
+      min-height: 560px;
+    }
+
+    .mode.active {
+      display: block;
+    }
+
+    .match-board {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: clamp(42px, 8vw, 112px);
+      min-height: 560px;
+      padding: 28px;
+    }
+
+    #lineCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .column {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .word-card {
+      min-height: 62px;
+      padding: 12px 15px;
+      text-align: left;
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 8px 22px rgba(24, 32, 38, 0.06);
+      transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+    }
+
+    .word-card b {
+      display: block;
+      font-size: 18px;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+
+    .word-card span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .word-card:hover {
+      transform: translateY(-1px);
+      border-color: rgba(15, 123, 108, 0.44);
+      box-shadow: 0 12px 26px rgba(24, 32, 38, 0.09);
+    }
+
+    .word-card.selected {
+      border-color: var(--brand);
+      background: #e8f6f2;
+      box-shadow: 0 0 0 3px rgba(15, 123, 108, 0.16);
+    }
+
+    .word-card.correct {
+      color: #fff;
+      background: var(--good);
+      border-color: var(--good);
+      pointer-events: none;
+    }
+
+    .word-card.correct span {
+      color: rgba(255, 255, 255, 0.76);
+    }
+
+    .word-card.wrong {
+      animation: shake 0.28s ease;
+      border-color: var(--bad);
+    }
+
+    @keyframes shake {
+      25% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); }
+      75% { transform: translateX(-3px); }
+    }
+
+    .write-mode {
+      display: grid;
+      grid-template-columns: minmax(260px, 0.95fr) minmax(320px, 1.1fr);
+      min-height: 560px;
+    }
+
+    .prompt-panel {
+      display: grid;
+      align-content: center;
+      gap: 20px;
+      padding: clamp(26px, 5vw, 52px);
+      background:
+        linear-gradient(rgba(9, 95, 83, 0.78), rgba(9, 95, 83, 0.78)),
+        url("data:image/svg+xml,%3Csvg width='900' height='700' viewBox='0 0 900 700' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='900' height='700' fill='%23f1d59b'/%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.34' stroke-width='3'%3E%3Cpath d='M88 166c118-72 246-70 382 6s252 82 346 17'/%3E%3Cpath d='M44 357c145-91 276-86 393 13s266 106 421 20'/%3E%3Cpath d='M119 530c170-105 317-98 441 18 76 71 157 86 243 44'/%3E%3C/g%3E%3Cg fill='%23095f53' fill-opacity='.25'%3E%3Ccircle cx='146' cy='110' r='54'/%3E%3Ccircle cx='748' cy='252' r='82'/%3E%3Ccircle cx='586' cy='548' r='65'/%3E%3C/g%3E%3C/svg%3E");
+      background-size: cover;
+      color: #fff;
+    }
+
+    .prompt-panel small {
+      color: rgba(255, 255, 255, 0.74);
+      font-size: 14px;
+    }
+
+    .prompt-word {
+      margin: 0;
+      font-size: clamp(44px, 8vw, 80px);
+      line-height: 1.05;
+      letter-spacing: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .prompt-panel p {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.82);
+      line-height: 1.7;
+    }
+
+    .answer-panel {
+      display: grid;
+      align-content: center;
+      gap: 16px;
+      padding: clamp(24px, 5vw, 52px);
+    }
+
+    .answer-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+    }
+
+    .answer-input {
+      min-height: 54px;
+      width: 100%;
+      padding: 0 16px;
+      color: var(--ink);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: 20px;
+      outline: none;
+    }
+
+    .answer-input:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(15, 123, 108, 0.14);
+    }
+
+    .feedback {
+      min-height: 52px;
+      padding: 13px 14px;
+      color: var(--muted);
+      background: var(--soft);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      line-height: 1.45;
+    }
+
+    .feedback.good {
+      color: #0f5c3c;
+      background: #e9f7ef;
+      border-color: #bce4ce;
+    }
+
+    .feedback.bad {
+      color: #8a241d;
+      background: #fff0ed;
+      border-color: #f3c5bd;
+    }
+
+    .progress {
+      height: 10px;
+      overflow: hidden;
+      background: var(--soft);
+      border-radius: 999px;
+    }
+
+    .progress i {
+      display: block;
+      width: 0%;
+      height: 100%;
+      background: var(--accent);
+      transition: width 0.25s ease;
+    }
+
+    .word-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .mini-word {
+      padding: 9px 10px;
+      color: var(--muted);
+      background: var(--soft);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: 13px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .mini-word.done {
+      color: #0f5c3c;
+      background: #e9f7ef;
+      border-color: #bce4ce;
+    }
+
+    svg.icon {
+      width: 19px;
+      height: 19px;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      flex: 0 0 auto;
+    }
+
+    @media (max-width: 820px) {
+      .app {
+        width: min(100% - 20px, 680px);
+        padding: 16px 0;
+      }
+
+      .topbar,
+      .toolbar,
+      .write-mode {
+        grid-template-columns: 1fr;
+      }
+
+      .scoreboard {
+        min-width: 0;
+      }
+
+      .select-wrap,
+      .tools {
+        justify-content: stretch;
+      }
+
+      .tools > * {
+        flex: 1;
+      }
+
+      .tabs {
+        width: 100%;
+      }
+
+      .tab {
+        flex: 1;
+      }
+
+      .match-board {
+        grid-template-columns: 1fr;
+        gap: 18px;
+        padding: 16px;
+      }
+
+      #lineCanvas {
+        display: none;
+      }
+
+      .word-card {
+        min-height: 56px;
+      }
+
+      .prompt-panel {
+        min-height: 250px;
+      }
+
+      .answer-row {
+        grid-template-columns: 1fr;
+      }
+
+      .word-list {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="title-block">
+        <h1>单词练习台</h1>
+        <p>选一组词，先用中英连线热身，再切到默写模式。答错会保留当前题，答对自动进入下一题。</p>
+      </div>
+      <section class="scoreboard" aria-label="练习统计">
+        <div class="score"><span>正确</span><strong id="rightCount">0</strong></div>
+        <div class="score"><span>错误</span><strong id="wrongCount">0</strong></div>
+        <div class="score"><span>进度</span><strong id="doneCount">0/8</strong></div>
+      </section>
+    </header>
+
+    <nav class="toolbar" aria-label="练习工具">
+      <div class="tabs" role="tablist">
+        <button class="tab active" id="matchTab" type="button" role="tab" aria-selected="true">中英连线</button>
+        <button class="tab" id="writeTab" type="button" role="tab" aria-selected="false">看中文写英文</button>
+      </div>
+      <div class="select-wrap">
+        <label for="setSelect">词表</label>
+        <select id="setSelect" aria-label="选择词表"></select>
+      </div>
+      <div class="tools">
+        <button class="icon-button" id="shuffleButton" type="button" title="打乱本轮">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>
+        </button>
+        <button class="primary-button" id="resetButton" type="button">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v6h6"/></svg>
+          重开
+        </button>
+      </div>
+    </nav>
+
+    <section class="workspace">
+      <section class="mode active" id="matchMode" aria-label="中英连线练习">
+        <div class="match-board" id="matchBoard">
+          <canvas id="lineCanvas"></canvas>
+          <div class="column" id="chineseColumn"></div>
+          <div class="column" id="englishColumn"></div>
+        </div>
+      </section>
+
+      <section class="mode" id="writeMode" aria-label="看中文写英文练习">
+        <div class="write-mode">
+          <aside class="prompt-panel">
+            <small id="writeStep">第 1 题</small>
+            <h2 class="prompt-word" id="promptWord">坚持</h2>
+            <p id="hintText">词性和例句会在这里出现。</p>
+          </aside>
+          <div class="answer-panel">
+            <div class="progress" aria-label="默写进度"><i id="writeProgress"></i></div>
+            <div class="answer-row">
+              <input class="answer-input" id="answerInput" type="text" autocomplete="off" spellcheck="false" placeholder="输入英文">
+              <button class="primary-button" id="checkButton" type="button">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg>
+                检查
+              </button>
+            </div>
+            <div class="feedback" id="feedback">准备好了就开始。</div>
+            <div class="word-list" id="writeList" aria-label="本轮单词"></div>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const wordSets = {
+      toefl50: {
+        name: "TOEFL前50",
+        words: [
+          { cn: "v. 加速；促进；加快", en: "accelerate", pos: "v.", example: "The wide use of digital technology has accelerated the pace of social development in modern cities." },
+          { cn: "v. 提倡，拥护，主张 n. 倡导者", en: "advocate", pos: "v.", example: "Many sociologists advocate that citizens should reduce the use of disposable plastic products to protect the environment." },
+          { cn: "v. 减轻，缓解（痛苦、压力、问题）", en: "alleviate", pos: "v.", example: "Building more public hospitals can effectively alleviate the pressure of medical resources shortage in urban areas." },
+          { cn: "adj. 模糊的，含糊不清的，有歧义的", en: "ambiguous", pos: "adj.", example: "Ambiguous social norms may lead to misunderstandings between people from different cultural backgrounds." },
+          { cn: "v. 放大，增强；扩大（影响）", en: "amplify", pos: "v.", example: "Social media platforms amplify the influence of public opinions and make social events spread more quickly." },
+          { cn: "v. 吸收，理解；融入（文化），同化", en: "assimilate", pos: "v.", example: "Immigrants need time to assimilate into the local society and adapt to the new living environment." },
+          { cn: "v. 把…归因于；认为是…所为 n. 特征，属性", en: "attribute", pos: "v.", example: "Most experts attribute the rising crime rate in some areas to the lack of adequate social security measures." },
+          { cn: "v. 禁止，取缔 n. 禁令", en: "ban", pos: "v.", example: "Some countries have decided to ban the sale of tobacco products to teenagers under the age of 18." },
+          { cn: "v. 繁荣，兴旺，迅速发展 n. 繁荣期，热潮", en: "boom", pos: "v.", example: "The tourism industry has boomed in coastal cities since the relaxation of travel restrictions." },
+          { cn: "n. 边界，界限；分界线", en: "boundary", pos: "n.", example: "Respecting the personal boundary of others is an essential principle of interpersonal communication in modern society." },
+          { cn: "n. 情况，情形；环境，境遇（复数）", en: "circumstance", pos: "n.", example: "People's behavior and choices are often influenced by their living circumstances and social backgrounds." },
+          { cn: "v./n. 倒塌，坍塌；崩溃，瓦解", en: "collapse", pos: "v./n.", example: "The lack of effective management may cause the collapse of the local public service system." },
+          { cn: "v. 遵守，遵从，服从", en: "comply", pos: "v.", example: "All citizens should comply with social rules and laws to maintain the stability of the whole society." },
+          { cn: "n. 结果，后果；重要性", en: "consequence", pos: "n.", example: "Individuals should be aware of the potential consequences of their behaviors and take responsibility for them." },
+          { cn: "v. 组成，构成；被视为，等同于", en: "constitute", pos: "v.", example: "Honesty and kindness constitute the core of moral standards in most human societies." },
+          { cn: "v. 污染，弄脏；玷污", en: "contaminate", pos: "v.", example: "Industrial waste water discharged without treatment will contaminate rivers and threaten the survival of aquatic organisms." },
+          { cn: "v. 反驳，驳斥；与…矛盾，相悖", en: "contradict", pos: "v.", example: "His actual behavior contradicts his promise to contribute more to community public welfare activities." },
+          { cn: "adj. 传统的，惯例的；常规的", en: "conventional", pos: "adj.", example: "Young people in modern society are more willing to break conventional ideas and pursue personalized lifestyles." },
+          { cn: "adj. 腐败的，贪污的 v. 使腐败，腐蚀", en: "corrupt", pos: "adj.", example: "Strict supervision and punishment mechanisms can prevent officials from becoming corrupt and protect social fairness." },
+          { cn: "v. 控制，抑制，约束 n. 约束，限制", en: "curb", pos: "v.", example: "The government has taken a series of measures to curb the excessive consumption of natural resources." },
+          { cn: "v./n. 下降，衰退，衰落；婉拒", en: "decline", pos: "v./n.", example: "The continuous decline of interpersonal communication in real life is a serious problem caused by over-reliance on mobile phones." },
+          { cn: "v. 恶化，变坏，退化", en: "deteriorate", pos: "v.", example: "Air quality in some industrial cities will continue to deteriorate if no effective environmental protection measures are taken." },
+          { cn: "adj. 毁灭性的，极具破坏力的；令人震惊的", en: "devastating", pos: "adj.", example: "Natural disasters such as earthquakes and floods have devastating effects on people's lives and social development." },
+          { cn: "n. 困境，进退两难的局面", en: "dilemma", pos: "n.", example: "Many young people are facing the dilemma of choosing between stable jobs and challenging but promising careers." },
+          { cn: "v. 察觉，识别；领悟，理解", en: "discern", pos: "v.", example: "It is not easy for ordinary people to discern the hidden social problems behind the surface prosperity of the city." },
+          { cn: "v. 歧视，区别对待；区分，辨别", en: "discriminate", pos: "v.", example: "Any society that discriminates against people based on their gender or race cannot achieve real equality and harmony." },
+          { cn: "v. 扭曲，使变形；歪曲，曲解", en: "distort", pos: "v.", example: "False information on social media may distort people's cognition of social events and trigger unnecessary panic." },
+          { cn: "adj. 多种多样的，形形色色的；不同的", en: "diverse", pos: "adj.", example: "A diverse cultural environment can enrich people's life experience and broaden their horizons." },
+          { cn: "v. 支配，控制；主导，占优势", en: "dominate", pos: "v.", example: "Digital media has gradually dominated people's daily life and changed their ways of obtaining information and communicating." },
+          { cn: "adj. 激烈的，猛烈的；极端的，急剧的", en: "drastic", pos: "adj.", example: "Drastic changes in social values have led to great differences in life attitudes between the elderly and young people." },
+          { cn: "adj. 耐用的，持久的；长期的", en: "durable", pos: "adj.", example: "Building a durable social security system is the key to ensuring people's sense of happiness and security." },
+          { cn: "v. 消除，根除，淘汰", en: "eliminate", pos: "v.", example: "Only by strengthening education and publicity can we eliminate the bad habits that are harmful to social civilization." },
+          { cn: "v. 出现，浮现；露出，冒出", en: "emerge", pos: "v.", example: "A large number of new social problems have emerged with the rapid development of artificial intelligence technology." },
+          { cn: "v. 效仿，模仿；努力赶上", en: "emulate", pos: "v.", example: "Teenagers are more likely to emulate the behaviors of celebrities, so public figures should set good social examples." },
+          { cn: "v./n. 努力，竭力，尝试", en: "endeavor", pos: "v./n.", example: "All members of society should endeavor to protect the ecological environment for the sustainable development of human beings." },
+          { cn: "v. 提高，增强，增进", en: "enhance", pos: "v.", example: "Volunteer activities can effectively enhance people's sense of social responsibility and team spirit." },
+          { cn: "v. 实施，执行；强制，强迫", en: "enforce", pos: "v.", example: "The police are responsible for enforcing laws and maintaining social order and public safety." },
+          { cn: "v. 丰富，充实；使富裕，使富足", en: "enrich", pos: "v.", example: "Reading books of different types can enrich our spiritual world and deepen our understanding of society." },
+          { cn: "n. 平衡，均衡；均势", en: "equilibrium", pos: "n.", example: "Maintaining the equilibrium between economic development and environmental protection is a major challenge for modern society." },
+          { cn: "n. 侵蚀，腐蚀；逐渐破坏，削弱", en: "erosion", pos: "n.", example: "The erosion of traditional culture is an unavoidable problem in the process of social modernization." },
+          { cn: "adj. 道德的，伦理的；合乎道德的", en: "ethical", pos: "adj.", example: "Every citizen should abide by ethical standards and refuse to engage in behaviors that harm the interests of others and society." },
+          { cn: "v. 唤起，引起，触发（感情、记忆）", en: "evoke", pos: "v.", example: "Traditional festivals can evoke people's sense of national identity and strengthen the cohesion of the whole society." },
+          { cn: "adj. 过多的，过分的，过度的", en: "excessive", pos: "adj.", example: "Excessive pursuit of material wealth may make people ignore the importance of spiritual happiness and social relations." },
+          { cn: "v. 开发，利用；剥削，压榨", en: "exploit", pos: "v.", example: "It is important for human beings to exploit natural resources rationally instead of overusing them without restraint." },
+          { cn: "v. 促进，使便利，帮助", en: "facilitate", pos: "v.", example: "Advanced transportation systems facilitate people's travel and promote the flow of goods and personnel between regions." },
+          { cn: "adj. 致命的；灾难性的，毁灭性的", en: "fatal", pos: "adj.", example: "Ignoring the hidden dangers of environmental pollution will bring fatal consequences to the survival and development of human society." },
+          { cn: "adj. 可行的，行得通的；适宜的", en: "feasible", pos: "adj.", example: "Building more community service centers is a feasible way to solve the problem of inconvenient life for the elderly." },
+          { cn: "v. 繁荣，兴旺，蓬勃发展；茂盛生长", en: "flourish", pos: "v.", example: "Cultural and artistic undertakings will flourish only when they are closely combined with the needs of society and people's lives." },
+          { cn: "v. 预见，预知，预料", en: "foresee", pos: "v.", example: "A responsible government should foresee potential social risks and take preventive measures in advance." },
+          { cn: "v. 培养，促进，培育；收养，养育", en: "foster", pos: "v.", example: "Community activities can foster mutual understanding and friendship between neighbors and build a harmonious community atmosphere." }
+        ]
+      },
+      daily: {
+        name: "日常高频",
+        words: [
+          { cn: "坚持", en: "persist", pos: "v.", example: "persist in practicing every day" },
+          { cn: "选择", en: "choice", pos: "n.", example: "make a careful choice" },
+          { cn: "改善", en: "improve", pos: "v.", example: "improve your pronunciation" },
+          { cn: "重要的", en: "important", pos: "adj.", example: "an important habit" },
+          { cn: "解决", en: "solve", pos: "v.", example: "solve a hard problem" },
+          { cn: "安静的", en: "quiet", pos: "adj.", example: "a quiet room" },
+          { cn: "记住", en: "remember", pos: "v.", example: "remember the new word" },
+          { cn: "旅行", en: "travel", pos: "v./n.", example: "travel with friends" }
+        ]
+      },
+      school: {
+        name: "校园学习",
+        words: [
+          { cn: "作业", en: "homework", pos: "n.", example: "finish the homework" },
+          { cn: "考试", en: "exam", pos: "n.", example: "prepare for an exam" },
+          { cn: "图书馆", en: "library", pos: "n.", example: "study in the library" },
+          { cn: "知识", en: "knowledge", pos: "n.", example: "gain useful knowledge" },
+          { cn: "问题", en: "question", pos: "n.", example: "ask a question" },
+          { cn: "练习", en: "practice", pos: "n./v.", example: "practice speaking English" },
+          { cn: "课程", en: "course", pos: "n.", example: "take a science course" },
+          { cn: "笔记", en: "note", pos: "n.", example: "write a clear note" }
+        ]
+      },
+      travel: {
+        name: "旅行出行",
+        words: [
+          { cn: "机场", en: "airport", pos: "n.", example: "arrive at the airport" },
+          { cn: "护照", en: "passport", pos: "n.", example: "show your passport" },
+          { cn: "行李", en: "luggage", pos: "n.", example: "carry heavy luggage" },
+          { cn: "地图", en: "map", pos: "n.", example: "check the map" },
+          { cn: "酒店", en: "hotel", pos: "n.", example: "book a hotel" },
+          { cn: "票", en: "ticket", pos: "n.", example: "buy a train ticket" },
+          { cn: "到达", en: "arrive", pos: "v.", example: "arrive before noon" },
+          { cn: "风景", en: "view", pos: "n.", example: "enjoy the mountain view" }
+        ]
+      }
+    };
+
+    const $ = (selector) => document.querySelector(selector);
+    const elements = {
+      setSelect: $("#setSelect"),
+      matchTab: $("#matchTab"),
+      writeTab: $("#writeTab"),
+      matchMode: $("#matchMode"),
+      writeMode: $("#writeMode"),
+      chineseColumn: $("#chineseColumn"),
+      englishColumn: $("#englishColumn"),
+      matchBoard: $("#matchBoard"),
+      canvas: $("#lineCanvas"),
+      rightCount: $("#rightCount"),
+      wrongCount: $("#wrongCount"),
+      doneCount: $("#doneCount"),
+      resetButton: $("#resetButton"),
+      shuffleButton: $("#shuffleButton"),
+      writeStep: $("#writeStep"),
+      promptWord: $("#promptWord"),
+      hintText: $("#hintText"),
+      answerInput: $("#answerInput"),
+      checkButton: $("#checkButton"),
+      feedback: $("#feedback"),
+      writeProgress: $("#writeProgress"),
+      writeList: $("#writeList")
+    };
+
+    let currentSetKey = "toefl50";
+    let activeMode = "match";
+    let leftSelection = null;
+    let rightSelection = null;
+    let matchedIds = new Set();
+    let matches = [];
+    let writeIndex = 0;
+    let writeDone = new Set();
+    let stats = { right: 0, wrong: 0 };
+
+    function shuffle(items) {
+      const copy = [...items];
+      for (let i = copy.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function normalize(value) {
+      return value.trim().toLowerCase().replace(/\s+/g, " ");
+    }
+
+    function meaningText(word) {
+      return word.cn.replace(/^(v\.\/n\.|v\.|n\.|adj\.|adv\.)\s*/, "");
+    }
+
+    function words() {
+      return wordSets[currentSetKey].words.map((word, index) => ({ ...word, id: `${currentSetKey}-${index}` }));
+    }
+
+    function updateStats() {
+      const total = words().length;
+      const done = activeMode === "match" ? matchedIds.size : writeDone.size;
+      elements.rightCount.textContent = stats.right;
+      elements.wrongCount.textContent = stats.wrong;
+      elements.doneCount.textContent = `${done}/${total}`;
+      elements.writeProgress.style.width = `${Math.round((writeDone.size / total) * 100)}%`;
+    }
+
+    function clearSelections() {
+      leftSelection = null;
+      rightSelection = null;
+      document.querySelectorAll(".word-card.selected").forEach((button) => button.classList.remove("selected"));
+    }
+
+    function makeCard(word, side) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "word-card";
+      button.dataset.id = word.id;
+      button.dataset.side = side;
+      button.innerHTML = side === "cn"
+        ? `<b>${meaningText(word)}</b><span>${word.pos}</span>`
+        : `<b>${word.en}</b><span>${word.example}</span>`;
+      button.addEventListener("click", () => selectMatch(button));
+      return button;
+    }
+
+    function renderMatch() {
+      clearSelections();
+      matchedIds = new Set();
+      matches = [];
+      elements.chineseColumn.innerHTML = "";
+      elements.englishColumn.innerHTML = "";
+
+      const currentWords = words();
+      currentWords.forEach((word) => elements.chineseColumn.appendChild(makeCard(word, "cn")));
+      shuffle(currentWords).forEach((word) => elements.englishColumn.appendChild(makeCard(word, "en")));
+      updateStats();
+      requestAnimationFrame(drawLines);
+    }
+
+    function selectMatch(button) {
+      const id = button.dataset.id;
+      if (matchedIds.has(id)) return;
+
+      if (button.dataset.side === "cn") {
+        if (leftSelection) leftSelection.classList.remove("selected");
+        leftSelection = button;
+      } else {
+        if (rightSelection) rightSelection.classList.remove("selected");
+        rightSelection = button;
+      }
+      button.classList.add("selected");
+
+      if (!leftSelection || !rightSelection) return;
+      if (leftSelection.dataset.id === rightSelection.dataset.id) {
+        const matchedId = leftSelection.dataset.id;
+        matchedIds.add(matchedId);
+        matches.push({ id: matchedId, left: leftSelection, right: rightSelection });
+        leftSelection.classList.add("correct");
+        rightSelection.classList.add("correct");
+        stats.right += 1;
+        clearSelections();
+        drawLines();
+      } else {
+        stats.wrong += 1;
+        leftSelection.classList.add("wrong");
+        rightSelection.classList.add("wrong");
+        setTimeout(() => {
+          document.querySelectorAll(".word-card.wrong").forEach((card) => card.classList.remove("wrong"));
+          clearSelections();
+        }, 320);
+      }
+      updateStats();
+    }
+
+    function drawLines() {
+      const canvas = elements.canvas;
+      const rect = elements.matchBoard.getBoundingClientRect();
+      const ctx = canvas.getContext("2d");
+      const scale = window.devicePixelRatio || 1;
+      canvas.width = Math.max(1, Math.floor(rect.width * scale));
+      canvas.height = Math.max(1, Math.floor(rect.height * scale));
+      canvas.style.width = `${rect.width}px`;
+      canvas.style.height = `${rect.height}px`;
+      ctx.setTransform(scale, 0, 0, scale, 0, 0);
+      ctx.clearRect(0, 0, rect.width, rect.height);
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = "rgba(20, 140, 90, 0.72)";
+
+      matches.forEach(({ left, right }) => {
+        const a = left.getBoundingClientRect();
+        const b = right.getBoundingClientRect();
+        const startX = a.right - rect.left;
+        const startY = a.top + a.height / 2 - rect.top;
+        const endX = b.left - rect.left;
+        const endY = b.top + b.height / 2 - rect.top;
+        const mid = Math.max(24, (endX - startX) / 2);
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.bezierCurveTo(startX + mid, startY, endX - mid, endY, endX, endY);
+        ctx.stroke();
+      });
+    }
+
+    function renderWriteList() {
+      elements.writeList.innerHTML = "";
+      words().forEach((word, index) => {
+        const item = document.createElement("div");
+        item.className = `mini-word${writeDone.has(index) ? " done" : ""}`;
+        item.textContent = `${meaningText(word)} / ${word.en}`;
+        elements.writeList.appendChild(item);
+      });
+    }
+
+    function renderWriteQuestion() {
+      const currentWords = words();
+      if (writeDone.size === currentWords.length) {
+        elements.writeStep.textContent = "已完成";
+        elements.promptWord.textContent = "全部答完";
+        elements.hintText.textContent = "可以重开或换一组词继续练。";
+        elements.answerInput.value = "";
+        elements.answerInput.disabled = true;
+        elements.checkButton.disabled = true;
+        elements.feedback.className = "feedback good";
+        elements.feedback.textContent = "这一轮完成了。";
+        updateStats();
+        renderWriteList();
+        return;
+      }
+
+      while (writeDone.has(writeIndex)) {
+        writeIndex = (writeIndex + 1) % currentWords.length;
+      }
+      const word = currentWords[writeIndex];
+      elements.writeStep.textContent = `第 ${writeDone.size + 1} 题 / ${currentWords.length}`;
+      elements.promptWord.textContent = meaningText(word);
+      elements.hintText.textContent = `${word.pos}  ${word.example}`;
+      elements.answerInput.disabled = false;
+      elements.checkButton.disabled = false;
+      elements.answerInput.value = "";
+      elements.feedback.className = "feedback";
+      elements.feedback.textContent = "输入对应英文后检查。";
+      updateStats();
+      renderWriteList();
+      setTimeout(() => elements.answerInput.focus(), 0);
+    }
+
+    function checkAnswer() {
+      const currentWords = words();
+      const word = currentWords[writeIndex];
+      const answer = normalize(elements.answerInput.value);
+      if (!answer) {
+        elements.feedback.className = "feedback bad";
+        elements.feedback.textContent = "先写一个答案。";
+        return;
+      }
+
+      if (answer === normalize(word.en)) {
+        stats.right += 1;
+        writeDone.add(writeIndex);
+        elements.feedback.className = "feedback good";
+        elements.feedback.textContent = `正确：${meaningText(word)} = ${word.en}`;
+        writeIndex = (writeIndex + 1) % currentWords.length;
+        setTimeout(renderWriteQuestion, 520);
+      } else {
+        stats.wrong += 1;
+        elements.feedback.className = "feedback bad";
+        elements.feedback.textContent = `再想想。提示：${word.en.slice(0, 1)}${"·".repeat(Math.max(1, word.en.length - 1))}`;
+      }
+      updateStats();
+    }
+
+    function switchMode(mode) {
+      activeMode = mode;
+      const isMatch = mode === "match";
+      elements.matchTab.classList.toggle("active", isMatch);
+      elements.writeTab.classList.toggle("active", !isMatch);
+      elements.matchTab.setAttribute("aria-selected", String(isMatch));
+      elements.writeTab.setAttribute("aria-selected", String(!isMatch));
+      elements.matchMode.classList.toggle("active", isMatch);
+      elements.writeMode.classList.toggle("active", !isMatch);
+      updateStats();
+      if (isMatch) {
+        requestAnimationFrame(drawLines);
+      } else {
+        renderWriteQuestion();
+      }
+    }
+
+    function resetAll({ keepStats = false } = {}) {
+      if (!keepStats) stats = { right: 0, wrong: 0 };
+      matchedIds = new Set();
+      matches = [];
+      writeIndex = 0;
+      writeDone = new Set();
+      renderMatch();
+      renderWriteQuestion();
+      switchMode(activeMode);
+    }
+
+    function populateSets() {
+      Object.entries(wordSets).forEach(([key, set]) => {
+        const option = document.createElement("option");
+        option.value = key;
+        option.textContent = set.name;
+        elements.setSelect.appendChild(option);
+      });
+      elements.setSelect.value = currentSetKey;
+    }
+
+    elements.matchTab.addEventListener("click", () => switchMode("match"));
+    elements.writeTab.addEventListener("click", () => switchMode("write"));
+    elements.resetButton.addEventListener("click", () => resetAll());
+    elements.shuffleButton.addEventListener("click", () => {
+      renderMatch();
+      renderWriteQuestion();
+      updateStats();
+    });
+    elements.setSelect.addEventListener("change", (event) => {
+      currentSetKey = event.target.value;
+      resetAll();
+    });
+    elements.checkButton.addEventListener("click", checkAnswer);
+    elements.answerInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") checkAnswer();
+    });
+    window.addEventListener("resize", () => requestAnimationFrame(drawLines));
+
+    populateSets();
+    resetAll();
+  </script>
+</body>
+</html>
