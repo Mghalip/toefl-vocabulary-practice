@@ -774,7 +774,7 @@
       button.dataset.side = side;
       button.innerHTML = side === "cn"
         ? `<b>${meaningText(word)}</b><span>${word.pos}</span>`
-        : `<b>${word.en}</b><span>${word.example}</span>`;
+        : `<b>${word.en}</b>`;
       button.addEventListener("click", () => selectMatch(button));
       return button;
     }
