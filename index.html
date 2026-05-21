@@ -110,7 +110,7 @@
 
     .toolbar {
       display: grid;
-      grid-template-columns: auto minmax(180px, 1fr) auto;
+      grid-template-columns: auto minmax(160px, 1fr) auto;
       gap: 10px;
       align-items: center;
       margin-bottom: 14px;
@@ -545,12 +545,12 @@
     <header class="topbar">
       <div class="title-block">
         <h1>单词练习台</h1>
-        <p>选一组词，先用中英连线热身，再切到默写模式。答错会保留当前题，答对自动进入下一题。</p>
+        <p>选一个单词范围，先做中英连线：中文和英文配对正确后会自动消掉。再切到看中文写英文，答错会保留当前题，答对后会先显示正确答案，再进入下一题。</p>
       </div>
       <section class="scoreboard" aria-label="练习统计">
         <div class="score"><span>正确</span><strong id="rightCount">0</strong></div>
         <div class="score"><span>错误</span><strong id="wrongCount">0</strong></div>
-        <div class="score"><span>进度</span><strong id="doneCount">0/8</strong></div>
+        <div class="score"><span>进度</span><strong id="doneCount">0/50</strong></div>
       </section>
     </header>
 
@@ -560,8 +560,8 @@
         <button class="tab" id="writeTab" type="button" role="tab" aria-selected="false">看中文写英文</button>
       </div>
       <div class="select-wrap">
-        <label for="setSelect">词表</label>
-        <select id="setSelect" aria-label="选择词表"></select>
+        <label for="rangeSelect">范围</label>
+        <select id="rangeSelect" aria-label="选择单词范围"></select>
       </div>
       <div class="tools">
         <button class="icon-button" id="shuffleButton" type="button" title="打乱本轮">
@@ -612,106 +612,3012 @@
   </main>
 
   <script>
-    const wordSets = {
-      toefl50: {
-        name: "TOEFL前50",
-        words: [
-          { cn: "v. 加速；促进；加快", en: "accelerate", pos: "v.", example: "The wide use of digital technology has accelerated the pace of social development in modern cities." },
-          { cn: "v. 提倡，拥护，主张 n. 倡导者", en: "advocate", pos: "v.", example: "Many sociologists advocate that citizens should reduce the use of disposable plastic products to protect the environment." },
-          { cn: "v. 减轻，缓解（痛苦、压力、问题）", en: "alleviate", pos: "v.", example: "Building more public hospitals can effectively alleviate the pressure of medical resources shortage in urban areas." },
-          { cn: "adj. 模糊的，含糊不清的，有歧义的", en: "ambiguous", pos: "adj.", example: "Ambiguous social norms may lead to misunderstandings between people from different cultural backgrounds." },
-          { cn: "v. 放大，增强；扩大（影响）", en: "amplify", pos: "v.", example: "Social media platforms amplify the influence of public opinions and make social events spread more quickly." },
-          { cn: "v. 吸收，理解；融入（文化），同化", en: "assimilate", pos: "v.", example: "Immigrants need time to assimilate into the local society and adapt to the new living environment." },
-          { cn: "v. 把…归因于；认为是…所为 n. 特征，属性", en: "attribute", pos: "v.", example: "Most experts attribute the rising crime rate in some areas to the lack of adequate social security measures." },
-          { cn: "v. 禁止，取缔 n. 禁令", en: "ban", pos: "v.", example: "Some countries have decided to ban the sale of tobacco products to teenagers under the age of 18." },
-          { cn: "v. 繁荣，兴旺，迅速发展 n. 繁荣期，热潮", en: "boom", pos: "v.", example: "The tourism industry has boomed in coastal cities since the relaxation of travel restrictions." },
-          { cn: "n. 边界，界限；分界线", en: "boundary", pos: "n.", example: "Respecting the personal boundary of others is an essential principle of interpersonal communication in modern society." },
-          { cn: "n. 情况，情形；环境，境遇（复数）", en: "circumstance", pos: "n.", example: "People's behavior and choices are often influenced by their living circumstances and social backgrounds." },
-          { cn: "v./n. 倒塌，坍塌；崩溃，瓦解", en: "collapse", pos: "v./n.", example: "The lack of effective management may cause the collapse of the local public service system." },
-          { cn: "v. 遵守，遵从，服从", en: "comply", pos: "v.", example: "All citizens should comply with social rules and laws to maintain the stability of the whole society." },
-          { cn: "n. 结果，后果；重要性", en: "consequence", pos: "n.", example: "Individuals should be aware of the potential consequences of their behaviors and take responsibility for them." },
-          { cn: "v. 组成，构成；被视为，等同于", en: "constitute", pos: "v.", example: "Honesty and kindness constitute the core of moral standards in most human societies." },
-          { cn: "v. 污染，弄脏；玷污", en: "contaminate", pos: "v.", example: "Industrial waste water discharged without treatment will contaminate rivers and threaten the survival of aquatic organisms." },
-          { cn: "v. 反驳，驳斥；与…矛盾，相悖", en: "contradict", pos: "v.", example: "His actual behavior contradicts his promise to contribute more to community public welfare activities." },
-          { cn: "adj. 传统的，惯例的；常规的", en: "conventional", pos: "adj.", example: "Young people in modern society are more willing to break conventional ideas and pursue personalized lifestyles." },
-          { cn: "adj. 腐败的，贪污的 v. 使腐败，腐蚀", en: "corrupt", pos: "adj.", example: "Strict supervision and punishment mechanisms can prevent officials from becoming corrupt and protect social fairness." },
-          { cn: "v. 控制，抑制，约束 n. 约束，限制", en: "curb", pos: "v.", example: "The government has taken a series of measures to curb the excessive consumption of natural resources." },
-          { cn: "v./n. 下降，衰退，衰落；婉拒", en: "decline", pos: "v./n.", example: "The continuous decline of interpersonal communication in real life is a serious problem caused by over-reliance on mobile phones." },
-          { cn: "v. 恶化，变坏，退化", en: "deteriorate", pos: "v.", example: "Air quality in some industrial cities will continue to deteriorate if no effective environmental protection measures are taken." },
-          { cn: "adj. 毁灭性的，极具破坏力的；令人震惊的", en: "devastating", pos: "adj.", example: "Natural disasters such as earthquakes and floods have devastating effects on people's lives and social development." },
-          { cn: "n. 困境，进退两难的局面", en: "dilemma", pos: "n.", example: "Many young people are facing the dilemma of choosing between stable jobs and challenging but promising careers." },
-          { cn: "v. 察觉，识别；领悟，理解", en: "discern", pos: "v.", example: "It is not easy for ordinary people to discern the hidden social problems behind the surface prosperity of the city." },
-          { cn: "v. 歧视，区别对待；区分，辨别", en: "discriminate", pos: "v.", example: "Any society that discriminates against people based on their gender or race cannot achieve real equality and harmony." },
-          { cn: "v. 扭曲，使变形；歪曲，曲解", en: "distort", pos: "v.", example: "False information on social media may distort people's cognition of social events and trigger unnecessary panic." },
-          { cn: "adj. 多种多样的，形形色色的；不同的", en: "diverse", pos: "adj.", example: "A diverse cultural environment can enrich people's life experience and broaden their horizons." },
-          { cn: "v. 支配，控制；主导，占优势", en: "dominate", pos: "v.", example: "Digital media has gradually dominated people's daily life and changed their ways of obtaining information and communicating." },
-          { cn: "adj. 激烈的，猛烈的；极端的，急剧的", en: "drastic", pos: "adj.", example: "Drastic changes in social values have led to great differences in life attitudes between the elderly and young people." },
-          { cn: "adj. 耐用的，持久的；长期的", en: "durable", pos: "adj.", example: "Building a durable social security system is the key to ensuring people's sense of happiness and security." },
-          { cn: "v. 消除，根除，淘汰", en: "eliminate", pos: "v.", example: "Only by strengthening education and publicity can we eliminate the bad habits that are harmful to social civilization." },
-          { cn: "v. 出现，浮现；露出，冒出", en: "emerge", pos: "v.", example: "A large number of new social problems have emerged with the rapid development of artificial intelligence technology." },
-          { cn: "v. 效仿，模仿；努力赶上", en: "emulate", pos: "v.", example: "Teenagers are more likely to emulate the behaviors of celebrities, so public figures should set good social examples." },
-          { cn: "v./n. 努力，竭力，尝试", en: "endeavor", pos: "v./n.", example: "All members of society should endeavor to protect the ecological environment for the sustainable development of human beings." },
-          { cn: "v. 提高，增强，增进", en: "enhance", pos: "v.", example: "Volunteer activities can effectively enhance people's sense of social responsibility and team spirit." },
-          { cn: "v. 实施，执行；强制，强迫", en: "enforce", pos: "v.", example: "The police are responsible for enforcing laws and maintaining social order and public safety." },
-          { cn: "v. 丰富，充实；使富裕，使富足", en: "enrich", pos: "v.", example: "Reading books of different types can enrich our spiritual world and deepen our understanding of society." },
-          { cn: "n. 平衡，均衡；均势", en: "equilibrium", pos: "n.", example: "Maintaining the equilibrium between economic development and environmental protection is a major challenge for modern society." },
-          { cn: "n. 侵蚀，腐蚀；逐渐破坏，削弱", en: "erosion", pos: "n.", example: "The erosion of traditional culture is an unavoidable problem in the process of social modernization." },
-          { cn: "adj. 道德的，伦理的；合乎道德的", en: "ethical", pos: "adj.", example: "Every citizen should abide by ethical standards and refuse to engage in behaviors that harm the interests of others and society." },
-          { cn: "v. 唤起，引起，触发（感情、记忆）", en: "evoke", pos: "v.", example: "Traditional festivals can evoke people's sense of national identity and strengthen the cohesion of the whole society." },
-          { cn: "adj. 过多的，过分的，过度的", en: "excessive", pos: "adj.", example: "Excessive pursuit of material wealth may make people ignore the importance of spiritual happiness and social relations." },
-          { cn: "v. 开发，利用；剥削，压榨", en: "exploit", pos: "v.", example: "It is important for human beings to exploit natural resources rationally instead of overusing them without restraint." },
-          { cn: "v. 促进，使便利，帮助", en: "facilitate", pos: "v.", example: "Advanced transportation systems facilitate people's travel and promote the flow of goods and personnel between regions." },
-          { cn: "adj. 致命的；灾难性的，毁灭性的", en: "fatal", pos: "adj.", example: "Ignoring the hidden dangers of environmental pollution will bring fatal consequences to the survival and development of human society." },
-          { cn: "adj. 可行的，行得通的；适宜的", en: "feasible", pos: "adj.", example: "Building more community service centers is a feasible way to solve the problem of inconvenient life for the elderly." },
-          { cn: "v. 繁荣，兴旺，蓬勃发展；茂盛生长", en: "flourish", pos: "v.", example: "Cultural and artistic undertakings will flourish only when they are closely combined with the needs of society and people's lives." },
-          { cn: "v. 预见，预知，预料", en: "foresee", pos: "v.", example: "A responsible government should foresee potential social risks and take preventive measures in advance." },
-          { cn: "v. 培养，促进，培育；收养，养育", en: "foster", pos: "v.", example: "Community activities can foster mutual understanding and friendship between neighbors and build a harmonious community atmosphere." }
-        ]
-      },
-      daily: {
-        name: "日常高频",
-        words: [
-          { cn: "坚持", en: "persist", pos: "v.", example: "persist in practicing every day" },
-          { cn: "选择", en: "choice", pos: "n.", example: "make a careful choice" },
-          { cn: "改善", en: "improve", pos: "v.", example: "improve your pronunciation" },
-          { cn: "重要的", en: "important", pos: "adj.", example: "an important habit" },
-          { cn: "解决", en: "solve", pos: "v.", example: "solve a hard problem" },
-          { cn: "安静的", en: "quiet", pos: "adj.", example: "a quiet room" },
-          { cn: "记住", en: "remember", pos: "v.", example: "remember the new word" },
-          { cn: "旅行", en: "travel", pos: "v./n.", example: "travel with friends" }
-        ]
-      },
-      school: {
-        name: "校园学习",
-        words: [
-          { cn: "作业", en: "homework", pos: "n.", example: "finish the homework" },
-          { cn: "考试", en: "exam", pos: "n.", example: "prepare for an exam" },
-          { cn: "图书馆", en: "library", pos: "n.", example: "study in the library" },
-          { cn: "知识", en: "knowledge", pos: "n.", example: "gain useful knowledge" },
-          { cn: "问题", en: "question", pos: "n.", example: "ask a question" },
-          { cn: "练习", en: "practice", pos: "n./v.", example: "practice speaking English" },
-          { cn: "课程", en: "course", pos: "n.", example: "take a science course" },
-          { cn: "笔记", en: "note", pos: "n.", example: "write a clear note" }
-        ]
-      },
-      travel: {
-        name: "旅行出行",
-        words: [
-          { cn: "机场", en: "airport", pos: "n.", example: "arrive at the airport" },
-          { cn: "护照", en: "passport", pos: "n.", example: "show your passport" },
-          { cn: "行李", en: "luggage", pos: "n.", example: "carry heavy luggage" },
-          { cn: "地图", en: "map", pos: "n.", example: "check the map" },
-          { cn: "酒店", en: "hotel", pos: "n.", example: "book a hotel" },
-          { cn: "票", en: "ticket", pos: "n.", example: "buy a train ticket" },
-          { cn: "到达", en: "arrive", pos: "v.", example: "arrive before noon" },
-          { cn: "风景", en: "view", pos: "n.", example: "enjoy the mountain view" }
-        ]
-      }
-    };
+    const documentWords = [
+    {
+            "cn": "v. 加速；促进；加快",
+            "en": "accelerate",
+            "pos": "v.",
+            "example": "The wide use of digital technology has accelerated the pace of social development in modern cities."
+    },
+    {
+            "cn": "v. 提倡，拥护，主张 n. 倡导者",
+            "en": "advocate",
+            "pos": "v.",
+            "example": "Many sociologists advocate that citizens should reduce the use of disposable plastic products to protect the environment."
+    },
+    {
+            "cn": "v. 减轻，缓解（痛苦、压力、问题）",
+            "en": "alleviate",
+            "pos": "v.",
+            "example": "Building more public hospitals can effectively alleviate the pressure of medical resources shortage in urban areas."
+    },
+    {
+            "cn": "adj. 模糊的，含糊不清的，有歧义的",
+            "en": "ambiguous",
+            "pos": "adj.",
+            "example": "Ambiguous social norms may lead to misunderstandings between people from different cultural backgrounds."
+    },
+    {
+            "cn": "v. 放大，增强；扩大（影响）",
+            "en": "amplify",
+            "pos": "v.",
+            "example": "Social media platforms amplify the influence of public opinions and make social events spread more quickly."
+    },
+    {
+            "cn": "v. 吸收，理解；融入（文化），同化",
+            "en": "assimilate",
+            "pos": "v.",
+            "example": "Immigrants need time to assimilate into the local society and adapt to the new living environment."
+    },
+    {
+            "cn": "v. 把…归因于；认为是…所为 n. 特征，属性",
+            "en": "attribute",
+            "pos": "v.",
+            "example": "Most experts attribute the rising crime rate in some areas to the lack of adequate social security measures."
+    },
+    {
+            "cn": "v. 禁止，取缔 n. 禁令",
+            "en": "ban",
+            "pos": "v.",
+            "example": "Some countries have decided to ban the sale of tobacco products to teenagers under the age of 18."
+    },
+    {
+            "cn": "v. 繁荣，兴旺，迅速发展 n. 繁荣期，热潮",
+            "en": "boom",
+            "pos": "v.",
+            "example": "The tourism industry has boomed in coastal cities since the relaxation of travel restrictions."
+    },
+    {
+            "cn": "n. 边界，界限；分界线",
+            "en": "boundary",
+            "pos": "n.",
+            "example": "Respecting the personal boundary of others is an essential principle of interpersonal communication in modern society."
+    },
+    {
+            "cn": "n. 情况，情形；环境，境遇（复数）",
+            "en": "circumstance",
+            "pos": "n.",
+            "example": "People's behavior and choices are often influenced by their living circumstances and social backgrounds."
+    },
+    {
+            "cn": "v./n. 倒塌，坍塌；崩溃，瓦解",
+            "en": "collapse",
+            "pos": "v./n.",
+            "example": "The lack of effective management may cause the collapse of the local public service system."
+    },
+    {
+            "cn": "v. 遵守，遵从，服从",
+            "en": "comply",
+            "pos": "v.",
+            "example": "All citizens should comply with social rules and laws to maintain the stability of the whole society."
+    },
+    {
+            "cn": "n. 结果，后果；重要性",
+            "en": "consequence",
+            "pos": "n.",
+            "example": "Individuals should be aware of the potential consequences of their behaviors and take responsibility for them."
+    },
+    {
+            "cn": "v. 组成，构成；被视为，等同于",
+            "en": "constitute",
+            "pos": "v.",
+            "example": "Honesty and kindness constitute the core of moral standards in most human societies."
+    },
+    {
+            "cn": "v. 污染，弄脏；玷污",
+            "en": "contaminate",
+            "pos": "v.",
+            "example": "Industrial waste water discharged without treatment will contaminate rivers and threaten the survival of aquatic organisms."
+    },
+    {
+            "cn": "v. 反驳，驳斥；与…矛盾，相悖",
+            "en": "contradict",
+            "pos": "v.",
+            "example": "His actual behavior contradicts his promise to contribute more to community public welfare activities."
+    },
+    {
+            "cn": "adj. 传统的，惯例的； 常规的",
+            "en": "conventional",
+            "pos": "adj.",
+            "example": "Young people in modern society are more willing to break conventional ideas and pursue personalized lifestyles."
+    },
+    {
+            "cn": "adj. 腐败的，贪污的 v. 使腐败，腐蚀",
+            "en": "corrupt",
+            "pos": "adj.",
+            "example": "Strict supervision and punishment mechanisms can prevent officials from becoming corrupt and protect social fairness."
+    },
+    {
+            "cn": "v. 控制，抑制，约束 n. 约束，限制",
+            "en": "curb",
+            "pos": "v.",
+            "example": "The government has taken a series of measures to curb the excessive consumption of natural resources."
+    },
+    {
+            "cn": "v./n. 下降，衰退，衰落；婉拒",
+            "en": "decline",
+            "pos": "v./n.",
+            "example": "The continuous decline of interpersonal communication in real life is a serious problem caused by over-reliance on mobile phones."
+    },
+    {
+            "cn": "v. 恶化，变坏，退化",
+            "en": "deteriorate",
+            "pos": "v.",
+            "example": "Air quality in some industrial cities will continue to deteriorate if no effective environmental protection measures are taken."
+    },
+    {
+            "cn": "adj. 毁灭性的，极具破坏力的；令人震惊的",
+            "en": "devastating",
+            "pos": "adj.",
+            "example": "Natural disasters such as earthquakes and floods have devastating effects on people's lives and social development."
+    },
+    {
+            "cn": "n. 困境，进退两难的局面",
+            "en": "dilemma",
+            "pos": "n.",
+            "example": "Many young people are facing the dilemma of choosing between stable jobs and challenging but promising careers."
+    },
+    {
+            "cn": "v. 察觉，识别；领悟，理解",
+            "en": "discern",
+            "pos": "v.",
+            "example": "It is not easy for ordinary people to discern the hidden social problems behind the surface prosperity of the city."
+    },
+    {
+            "cn": "v. 歧视，区别对待；区分，辨别",
+            "en": "discriminate",
+            "pos": "v.",
+            "example": "Any society that discriminates against people based on their gender or race cannot achieve real equality and harmony."
+    },
+    {
+            "cn": "v. 扭曲，使变形；歪曲，曲解",
+            "en": "distort",
+            "pos": "v.",
+            "example": "False information on social media may distort people's cognition of social events and trigger unnecessary panic."
+    },
+    {
+            "cn": "adj. 多种多样的，形形色色的；不同的",
+            "en": "diverse",
+            "pos": "adj.",
+            "example": "A diverse cultural environment can enrich people's life experience and broaden their horizons."
+    },
+    {
+            "cn": "v. 支配，控制；主导，占优势",
+            "en": "dominate",
+            "pos": "v.",
+            "example": "Digital media has gradually dominated people's daily life and changed their ways of obtaining information and communicating."
+    },
+    {
+            "cn": "adj. 激烈的， 猛烈的；极端的，急剧的",
+            "en": "drastic",
+            "pos": "adj.",
+            "example": "Drastic changes in social values have led to great differences in life attitudes between the elderly and young people."
+    },
+    {
+            "cn": "adj. 耐用的，持久的；长期的",
+            "en": "durable",
+            "pos": "adj.",
+            "example": "Building a durable social security system is the key to ensuring people's sense of happiness and security."
+    },
+    {
+            "cn": "v. 消除，根除，淘汰",
+            "en": "eliminate",
+            "pos": "v.",
+            "example": "Only by strengthening education and publicity can we eliminate the bad habits that are harmful to social civilization."
+    },
+    {
+            "cn": "v. 出现，浮现；露出，冒出",
+            "en": "emerge",
+            "pos": "v.",
+            "example": "A large number of new social problems have emerged with the rapid development of artificial intelligence technology."
+    },
+    {
+            "cn": "v. 效仿，模仿；努力赶上",
+            "en": "emulate",
+            "pos": "v.",
+            "example": "Teenagers are more likely to emulate the behaviors of celebrities, so public figures should set good social examples."
+    },
+    {
+            "cn": "v./n. 努力，竭力，尝试",
+            "en": "endeavor",
+            "pos": "v./n.",
+            "example": "All members of society should endeavor to protect the ecological environment for the sustainable development of human beings."
+    },
+    {
+            "cn": "v. 提高，增强， 增进",
+            "en": "enhance",
+            "pos": "v.",
+            "example": "Volunteer activities can effectively enhance people's sense of social responsibility and team spirit."
+    },
+    {
+            "cn": "v. 实施，执行；强制，强迫",
+            "en": "enforce",
+            "pos": "v.",
+            "example": "The police are responsible for enforcing laws and maintaining social order and public safety."
+    },
+    {
+            "cn": "v. 丰富，充实；使富裕，使富足",
+            "en": "enrich",
+            "pos": "v.",
+            "example": "Reading books of different types can enrich our spiritual world and deepen our understanding of society."
+    },
+    {
+            "cn": "n. 平衡，均衡；均势",
+            "en": "equilibrium",
+            "pos": "n.",
+            "example": "Maintaining the equilibrium between economic development and environmental protection is a major challenge for modern society."
+    },
+    {
+            "cn": "n. 侵蚀，腐蚀；逐渐破坏，削弱",
+            "en": "erosion",
+            "pos": "n.",
+            "example": "The erosion of traditional culture is an unavoidable problem in the process of social modernization."
+    },
+    {
+            "cn": "adj. 道德的，伦理的；合乎道德的",
+            "en": "ethical",
+            "pos": "adj.",
+            "example": "Every citizen should abide by ethical standards and refuse to engage in behaviors that harm the interests of others and society."
+    },
+    {
+            "cn": "v. 唤起，引起，触发 （感情、记忆）",
+            "en": "evoke",
+            "pos": "v.",
+            "example": "Traditional festivals can evoke people's sense of national identity and strengthen the cohesion of the whole society."
+    },
+    {
+            "cn": "adj. 过多的，过分的，过度的",
+            "en": "excessive",
+            "pos": "adj.",
+            "example": "Excessive pursuit of material wealth may make people ignore the importance of spiritual happiness and social relations."
+    },
+    {
+            "cn": "v. 开发，利用；剥削，压榨",
+            "en": "exploit",
+            "pos": "v.",
+            "example": "It is important for human beings to exploit natural resources rationally instead of overusing them without restraint."
+    },
+    {
+            "cn": "v. 促进，使便利，帮助",
+            "en": "facilitate",
+            "pos": "v.",
+            "example": "Advanced transportation systems facilitate people's travel and promote the flow of goods and personnel between regions."
+    },
+    {
+            "cn": "adj. 致命的；灾难性的，毁灭性的",
+            "en": "fatal",
+            "pos": "adj.",
+            "example": "Ignoring the hidden dangers of environmental pollution will bring fatal consequences to the survival and development of human society."
+    },
+    {
+            "cn": "adj. 可行的，行得通的；适宜的",
+            "en": "feasible",
+            "pos": "adj.",
+            "example": "Building more community service centers is a feasible way to solve the problem of inconvenient life for the elderly."
+    },
+    {
+            "cn": "v. 繁荣，兴旺，蓬勃发展；茂盛生长",
+            "en": "flourish",
+            "pos": "v.",
+            "example": "Cultural and artistic undertakings will flourish only when they are closely combined with the needs of society and people's lives."
+    },
+    {
+            "cn": "v. 预见，预知，预料",
+            "en": "foresee",
+            "pos": "v.",
+            "example": "A responsible government should foresee potential social risks and take preventive measures in advance."
+    },
+    {
+            "cn": "v. 培养，促进，培育；收养，养育",
+            "en": "foster",
+            "pos": "v.",
+            "example": "Community activities can foster mutual understanding and friendship between neighbors and build a harmonious community atmosphere."
+    },
+    {
+            "cn": "n. 欺诈，诈骗；骗子，假冒者",
+            "en": "fraud",
+            "pos": "n.",
+            "example": "Strengthening network security supervision can effectively prevent fraud and protect people's property safety."
+    },
+    {
+            "cn": "adj. 基本的，根本的；重要的 n. 基本原则，根本法则",
+            "en": "fundamental",
+            "pos": "adj.",
+            "example": "Respecting the rights and interests of others is a fundamental principle that all members of society must follow."
+    },
+    {
+            "cn": "v. 阻碍， 妨碍，牵制",
+            "en": "hamper",
+            "pos": "v.",
+            "example": "Outdated social systems and concepts will hamper the process of social reform and economic development."
+    },
+    {
+            "cn": "n. 危险，危害，风险 v. 冒险提出",
+            "en": "hazard",
+            "pos": "n.",
+            "example": "Air and water pollution are major hazards to people's health and the ecological balance of the society."
+    },
+    {
+            "cn": "adj. 同种类的，同性质的，均匀的",
+            "en": "homogeneous",
+            "pos": "adj.",
+            "example": "A completely homogeneous society is difficult to innovate, and cultural diversity is the source of social progress."
+    },
+    {
+            "cn": "adj. 人道的，仁慈的，有人情味的",
+            "en": "humane",
+            "pos": "adj.",
+            "example": "A humane society should provide sufficient help and support for the vulnerable groups such as the elderly and the disabled."
+    },
+    {
+            "cn": "n. 虚伪，伪善",
+            "en": "hypocrisy",
+            "pos": "n.",
+            "example": "Hypocrisy in interpersonal communication will damage mutual trust and is not conducive to the establishment of a healthy social relationship."
+    },
+    {
+            "cn": "v. 阐明，说明，举例说明；插图，配图",
+            "en": "illustrate",
+            "pos": "v.",
+            "example": "The following examples can illustrate the close relationship between social development and individual growth."
+    },
+    {
+            "cn": "v. 损害，损伤；削弱，减损",
+            "en": "impair",
+            "pos": "v.",
+            "example": "Long-term exposure to noisy environments will impair people's hearing and affect their physical and mental health."
+    },
+    {
+            "cn": "adj. 公正的，公平的，不偏不倚的",
+            "en": "impartial",
+            "pos": "adj.",
+            "example": "An impartial social justice system is the cornerstone of maintaining social stability and public trust."
+    },
+    {
+            "cn": "n. 工具，器具 v. 实施，执行，落实",
+            "en": "implement",
+            "pos": "n.",
+            "example": "It is not enough to make good policies; the key is to implement them effectively and ensure their practical effects."
+    },
+    {
+            "cn": "v. 强加，强制推行；征收（税款），施加（惩罚）",
+            "en": "impose",
+            "pos": "v.",
+            "example": "The government has the right to impose reasonable taxes on citizens and enterprises to maintain the operation of social public services."
+    },
+    {
+            "cn": "n. 激励，刺激，动机 adj. 激励的",
+            "en": "incentive",
+            "pos": "n.",
+            "example": "Setting appropriate incentives can encourage citizens to actively participate in environmental protection and public welfare activities."
+    },
+    {
+            "cn": "adj. 内在的，固有的，与生俱来的",
+            "en": "inherent",
+            "pos": "adj.",
+            "example": "Every social system has its inherent advantages and disadvantages, and continuous reform is needed to improve it."
+    },
+    {
+            "cn": "v. 发起，启动，开创；传授，使入门",
+            "en": "initiate",
+            "pos": "v.",
+            "example": "Young people with innovative ideas are more likely to initiate new social projects and promote social progress."
+    },
+    {
+            "cn": "adj. 不可或缺的，完整的；构成整体所必需的",
+            "en": "integral",
+            "pos": "adj.",
+            "example": "Public education and medical care are integral parts of the social security system and cannot be ignored."
+    },
+    {
+            "cn": "v. 整合，结合，融合；融入，使并入",
+            "en": "integrate",
+            "pos": "v.",
+            "example": "It is necessary to integrate traditional cultural elements into modern social life to inherit and carry forward excellent traditions."
+    },
+    {
+            "cn": "adj. 错综复杂的，复杂精细的",
+            "en": "intricate",
+            "pos": "adj.",
+            "example": "Modern social problems are usually intricate and require comprehensive solutions involving multiple departments."
+    },
+    {
+            "cn": "adj. 无效的，作废的；站不住脚的 n. 病人，残疾人",
+            "en": "invalid",
+            "pos": "adj.",
+            "example": "Any social behavior based on invalid reasons and false information will not be recognized and supported by the public."
+    },
+    {
+            "cn": "v. 危及，损害，使陷入险境",
+            "en": "jeopardize",
+            "pos": "v.",
+            "example": "Overdevelopment of urban areas will jeopardize the ecological environment and affect the sustainable development of the city."
+    },
+    {
+            "cn": "adj. 合法的，法律认可的；合理的，正当的",
+            "en": "legitimate",
+            "pos": "adj.",
+            "example": "Citizens have the legitimate right to express their opinions and suggestions on social issues to the government."
+    },
+    {
+            "cn": "n. 奢侈，奢华；奢侈品 adj. 奢华的",
+            "en": "luxury",
+            "pos": "n.",
+            "example": "For most people, a peaceful and happy family life is a greater luxury than material wealth in modern society."
+    },
+    {
+            "cn": "v. 显现，显露，表明 adj. 明显的，显而易见的",
+            "en": "manifest",
+            "pos": "v.",
+            "example": "People's satisfaction with social life is often manifested in their positive attitudes towards work and daily life."
+    },
+    {
+            "cn": "v. 调解，斡旋；介导，传递",
+            "en": "mediate",
+            "pos": "v.",
+            "example": "Community workers should mediate conflicts between residents in a timely manner to maintain a harmonious community environment."
+    },
+    {
+            "cn": "v. 移民，迁徙，移居",
+            "en": "migrate",
+            "pos": "v.",
+            "example": "A large number of people migrate from rural areas to cities every year in search of better job opportunities and living conditions."
+    },
+    {
+            "cn": "v. 使减少到最低限度，最小化；低估，轻视",
+            "en": "minimize",
+            "pos": "v.",
+            "example": "Taking preventive measures in advance can minimize the negative impact of natural disasters on social and economic development."
+    },
+    {
+            "cn": "n. 道德，道义；道德准则，品行",
+            "en": "morality",
+            "pos": "n.",
+            "example": "A society with high morality can create a positive social atmosphere and promote the healthy growth of all its members."
+    },
+    {
+            "cn": "adj. 平凡的，平淡的；世俗的，尘世的",
+            "en": "mundane",
+            "pos": "adj.",
+            "example": "Although most people's lives are mundane, they can still find happiness and meaning in ordinary daily life."
+    },
+    {
+            "cn": "adj. 臭名昭著的，声名狼藉的",
+            "en": "notorious",
+            "pos": "adj.",
+            "example": "Those who engage in illegal activities and harm social interests will eventually become notorious and be punished by law."
+    },
+    {
+            "cn": "adj. 废弃的，淘汰的；过时的，陈旧的",
+            "en": "obsolete",
+            "pos": "adj.",
+            "example": "With the development of science and technology, many traditional social lifestyles and tools have become obsolete."
+    },
+    {
+            "cn": "v./n. 抵消，弥补，补偿",
+            "en": "offset",
+            "pos": "v./n.",
+            "example": "The government can increase investment in environmental protection to offset the negative impact of industrial development on the environment."
+    },
+    {
+            "cn": "v. 省略，遗漏，忽略；忘记做",
+            "en": "omit",
+            "pos": "v.",
+            "example": "When analyzing social problems, we should not omit important factors, otherwise we will draw wrong conclusions."
+    },
+    {
+            "cn": "v. 压迫，压制，欺压",
+            "en": "oppress",
+            "pos": "v.",
+            "example": "A just society will never allow any group or individual to oppress the weak and vulnerable groups."
+    },
+    {
+            "cn": "adj. 最佳的，最优的，最适宜的",
+            "en": "optimal",
+            "pos": "adj.",
+            "example": "Finding the optimal balance between individual freedom and social norms is the key to building a harmonious society."
+    },
+    {
+            "cn": "adj. 过时的，陈旧的，落伍的",
+            "en": "outdated",
+            "pos": "adj.",
+            "example": "Outdated social concepts will restrict people's thinking and hinder the innovation and development of society."
+    },
+    {
+            "cn": "n. 悖论，自相矛盾的人或事",
+            "en": "paradox",
+            "pos": "n.",
+            "example": "A common paradox in modern society is that people have more material wealth but less spiritual happiness."
+    },
+    {
+            "cn": "adj. 普遍的，遍布的，无处不在的",
+            "en": "pervasive",
+            "pos": "adj.",
+            "example": "The influence of digital technology is pervasive in modern society and has changed almost all aspects of people's lives."
+    },
+    {
+            "cn": "adj. 看似合理的，可信的，花言巧语的",
+            "en": "plausible",
+            "pos": "adj.",
+            "example": "Some people put forward plausible arguments to defend their wrong behaviors, but they can't change the essence of the facts."
+    },
+    {
+            "cn": "adj. 普遍的，盛行的，流行的",
+            "en": "prevalent",
+            "pos": "adj.",
+            "example": "The habit of using mobile phones for a long time is prevalent among young people and has a certain impact on their physical health."
+    },
+    {
+            "cn": "n. 特权，特殊待遇；荣幸 v. 给予特权",
+            "en": "privilege",
+            "pos": "n.",
+            "example": "In a fair society, no one should have special privileges, and everyone is equal before the law and social rules. 二、政府政策类（91-170）"
+    },
+    {
+            "cn": "v. 分配，拨出，划拨（资金、资源）",
+            "en": "allocate",
+            "pos": "v.",
+            "example": "The government should reasonably allocate financial resources to improve the construction of public facilities in rural areas."
+    },
+    {
+            "cn": "n. 修正案，修改，修订",
+            "en": "amendment",
+            "pos": "n.",
+            "example": "The amendment of relevant laws and regulations is an important measure for the government to adapt to social development and solve new problems."
+    },
+    {
+            "cn": "v. 授权，批准， 准许",
+            "en": "authorize",
+            "pos": "v.",
+            "example": "Only the central government has the right to authorize the implementation of major national economic and social policies."
+    },
+    {
+            "cn": "n. 官僚主义，官僚体制；官僚机构",
+            "en": "bureaucracy",
+            "pos": "n.",
+            "example": "Simplifying bureaucracy and improving administrative efficiency are important goals of government reform in many countries."
+    },
+    {
+            "cn": "n. 预算，预算经费 v. 做预算，规划开支",
+            "en": "budget",
+            "pos": "n.",
+            "example": "The government's annual budget should give priority to investment in education, medical care and other people's livelihood projects."
+    },
+    {
+            "cn": "n. 人口普查，统计 v. 实施普查",
+            "en": "census",
+            "pos": "n.",
+            "example": "Carrying out a national census regularly can help the government grasp the population structure and formulate scientific development policies."
+    },
+    {
+            "cn": "v. 赔偿，补偿，弥补",
+            "en": "compensate",
+            "pos": "v.",
+            "example": "The government should compensate the residents whose interests are damaged due to urban construction and development."
+    },
+    {
+            "cn": "n. 让步，妥协；特许权，优惠",
+            "en": "concession",
+            "pos": "n.",
+            "example": "The government made appropriate concessions on the policy to meet the reasonable demands of the public and resolve social conflicts."
+    },
+    {
+            "cn": "v. 组建，设立 （机构）；构成，成为",
+            "en": "constitute",
+            "pos": "v.",
+            "example": "The constitution of a special committee is an effective way for the government to solve specific social and economic problems."
+    },
+    {
+            "cn": "adj. 有争议的，引起争论的",
+            "en": "controversial",
+            "pos": "adj.",
+            "example": "Some controversial government policies need to be fully discussed with the public before implementation to reduce opposition."
+    },
+    {
+            "cn": "adj. 友好的，热情的；真诚的 n. 甜饮",
+            "en": "cordial",
+            "pos": "adj.",
+            "example": "Cordial communication between the government and citizens can narrow the distance between them and improve the credibility of the government."
+    },
+    {
+            "cn": "n. 委员会，理事会；地方议会",
+            "en": "council",
+            "pos": "n.",
+            "example": "The city council is responsible for formulating and implementing urban development plans and public service policies."
+    },
+    {
+            "cn": "v. 分权，权力下放；分散",
+            "en": "decentralize",
+            "pos": "v.",
+            "example": "Decentralizing administrative power can improve the efficiency of local governments and make policies more in line with local actual conditions."
+    },
+    {
+            "cn": "n. 赤字，亏损；不足，缺陷",
+            "en": "deficit",
+            "pos": "n.",
+            "example": "The government should take effective measures to reduce the fiscal deficit and ensure the stable operation of the national economy."
+    },
+    {
+            "cn": "n. 代表，委员 v. 授权，委托，委派",
+            "en": "delegate",
+            "pos": "n.",
+            "example": "The government can delegate some administrative powers to local institutions to better serve the public and improve work efficiency."
+    },
+    {
+            "cn": "v. 描绘，描述，刻画",
+            "en": "depict",
+            "pos": "v.",
+            "example": "The government's official report accurately depicts the current situation of national economic development and future development goals."
+    },
+    {
+            "cn": "v. 剥夺，使丧失，阻碍",
+            "en": "deprive",
+            "pos": "v.",
+            "example": "No government has the right to deprive citizens of their legitimate rights and freedoms protected by law."
+    },
+    {
+            "cn": "v. 解除管制，放宽管制，撤销规定",
+            "en": "deregulate",
+            "pos": "v.",
+            "example": "Deregulating the market appropriately can stimulate the vitality of enterprises and promote the development of the national economy."
+    },
+    {
+            "cn": "adj. 有害的，不利的，损害的",
+            "en": "detrimental",
+            "pos": "adj.",
+            "example": "Blindly pursuing economic growth without considering environmental protection is detrimental to the long-term development of the country."
+    },
+    {
+            "cn": "adj. 外交的，从事外交的；灵活变通的，圆通的",
+            "en": "diplomatic",
+            "pos": "adj.",
+            "example": "The government should adopt a diplomatic way to resolve international disputes and maintain world peace and stability."
+    },
+    {
+            "cn": "v. 支付，支出，拨付（资金）",
+            "en": "disburse",
+            "pos": "v.",
+            "example": "The government should disburse public funds in a timely manner to ensure the smooth progress of infrastructure construction projects."
+    },
+    {
+            "cn": "v. 派遣，发送，调度 n. 急件，调度",
+            "en": "dispatch",
+            "pos": "v.",
+            "example": "The government will dispatch professional teams to disaster-stricken areas to carry out rescue and relief work as soon as possible."
+    },
+    {
+            "cn": "v. 分发， 分配，散布；分布",
+            "en": "distribute",
+            "pos": "v.",
+            "example": "The government's responsibility is to distribute social resources fairly and ensure that all citizens can enjoy basic public services."
+    },
+    {
+            "cn": "adj. 双重的，两重的；二元的",
+            "en": "dual",
+            "pos": "adj.",
+            "example": "The government shoulders the dual responsibility of promoting economic development and protecting the ecological environment."
+    },
+    {
+            "cn": "n. 责任，义务；关税，税收",
+            "en": "duty",
+            "pos": "n.",
+            "example": "It is the duty of the government to protect the safety and interests of citizens and provide high-quality public services."
+    },
+    {
+            "cn": "v. 消除，根除，废除（弊端、 不公）",
+            "en": "eliminate",
+            "pos": "v.",
+            "example": "The government should take strong measures to eliminate corruption and ensure the fairness and transparency of administrative work."
+    },
+    {
+            "cn": "v. 体现，包含，代表；使具体化",
+            "en": "embody",
+            "pos": "v.",
+            "example": "The government's new policy on people's livelihood embodies the concept of putting people's interests first."
+    },
+    {
+            "cn": "v. 认可，赞同，支持；背书",
+            "en": "endorse",
+            "pos": "v.",
+            "example": "Most citizens endorse the government's policy of increasing investment in rural education and medical care."
+    },
+    {
+            "cn": "v. 给予选举权，赋予公民权；解放",
+            "en": "enfranchise",
+            "pos": "v.",
+            "example": "A democratic government must enfranchise all adult citizens and ensure that everyone has the right to participate in national governance."
+    },
+    {
+            "cn": "v. 赋予权利，使有资格；给…命名",
+            "en": "entitle",
+            "pos": "v.",
+            "example": "Every citizen is entitled to enjoy the basic public services provided by the government, regardless of their social status and income."
+    },
+    {
+            "cn": "v. 根除，消灭，杜绝 （恶习、贫困）",
+            "en": "eradicate",
+            "pos": "v.",
+            "example": "It is the long-term goal of the government to eradicate poverty and build a moderately prosperous society in all respects."
+    },
+    {
+            "cn": "n. 地产，庄园；财产，遗产；不动产",
+            "en": "estate",
+            "pos": "n.",
+            "example": "The government formulated relevant policies to regulate the real estate market and prevent the excessive rise of housing prices."
+    },
+    {
+            "cn": "v. 逃避，规避，躲避；回避（责任）",
+            "en": "evade",
+            "pos": "v.",
+            "example": "The government has strengthened tax supervision to prevent enterprises and individuals from evading taxes and damaging national fiscal revenue."
+    },
+    {
+            "cn": "v. 免除， 豁免 adj. 被免除的，豁免的",
+            "en": "exempt",
+            "pos": "v.",
+            "example": "The government decided to exempt small and micro enterprises from part of the taxes to help them tide over the economic difficulties."
+    },
+    {
+            "cn": "n. 开支，支出，消费； 经费",
+            "en": "expenditure",
+            "pos": "n.",
+            "example": "The government should strictly control fiscal expenditure and ensure that every cent of public funds is used for public welfare."
+    },
+    {
+            "cn": "adj. 财政的， 国库的，税收的",
+            "en": "fiscal",
+            "pos": "adj.",
+            "example": "The government introduced a series of fiscal policies to stimulate economic growth and promote employment after the economic recession."
+    },
+    {
+            "cn": "v. 制定，规划，构想；阐述，明确表达",
+            "en": "formulate",
+            "pos": "v.",
+            "example": "The government needs to formulate scientific and reasonable development policies according to the actual national conditions of the country."
+    },
+    {
+            "cn": "v. 培育，促进，培养 （关系、合作）",
+            "en": "foster",
+            "pos": "v.",
+            "example": "The government should foster friendly relations with other countries and strengthen international cooperation in economy and culture."
+    },
+    {
+            "cn": "adj. 欺诈的， 欺骗性的，不诚实的",
+            "en": "fraudulent",
+            "pos": "adj.",
+            "example": "The government has set up a special agency to crack down on fraudulent financial activities and protect the property safety of citizens."
+    },
+    {
+            "cn": "v. 授予，给予，准许 n. 补助金，拨款，助学金",
+            "en": "grant",
+            "pos": "v.",
+            "example": "The government provides research grants for scientific researchers to encourage them to carry out innovative research and promote technological progress."
+    },
+    {
+            "cn": "v./n. 保证，担保，确保",
+            "en": "guarantee",
+            "pos": "v./n.",
+            "example": "A responsible government should guarantee the basic living needs of vulnerable groups and provide them with necessary social assistance."
+    },
+    {
+            "cn": "n. 港口，港湾 v. 怀有，藏有（想法）",
+            "en": "harbor",
+            "pos": "n.",
+            "example": "The government invested a lot of money in building and upgrading coastal harbors to promote the development of maritime trade."
+    },
+    {
+            "cn": "n. 等级制度，层级体系；统治集团",
+            "en": "hierarchy",
+            "pos": "n.",
+            "example": "Simplifying the administrative hierarchy is an important measure for the government to improve work efficiency and reduce bureaucratic costs."
+    },
+    {
+            "cn": "v. 征收（税），加征；强制推行（法规）",
+            "en": "impose",
+            "pos": "v.",
+            "example": "The government has the right to impose higher taxes on high-pollution enterprises to urge them to carry out environmental protection transformation."
+    },
+    {
+            "cn": "v. 为…举行落成仪式；开创，启动；就职",
+            "en": "inaugurate",
+            "pos": "v.",
+            "example": "The president inaugurated a new round of economic reform policies to promote the sustainable development of the national economy."
+    },
+    {
+            "cn": "v. 招致，蒙受，遭受（损失、惩罚）",
+            "en": "incur",
+            "pos": "v.",
+            "example": "Enterprises that violate environmental protection laws and regulations will incur heavy fines and even be ordered to stop production by the government."
+    },
+    {
+            "cn": "v. 赔偿，补偿，保障",
+            "en": "indemnify",
+            "pos": "v.",
+            "example": "The government should indemnify the victims of natural disasters in a timely manner to help them rebuild their homes and resume their lives."
+    },
+    {
+            "cn": "n. 基础设施，公共建设",
+            "en": "infrastructure",
+            "pos": "n.",
+            "example": "The government should increase investment in transportation and energy infrastructure to lay a solid foundation for regional economic development."
+    },
+    {
+            "cn": "v. 干预，介入，调停",
+            "en": "intervene",
+            "pos": "v.",
+            "example": "It is necessary for the government to intervene in the market when there is a serious imbalance between supply and demand."
+    },
+    {
+            "cn": "v. 立法，制定法律",
+            "en": "legislate",
+            "pos": "v.",
+            "example": "Parliaments and congresses around the world are responsible for legislating to regulate the behavior of individuals and enterprises."
+    },
+    {
+            "cn": "n. 法律，法规，立法",
+            "en": "legislation",
+            "pos": "n.",
+            "example": "The new environmental legislation will impose stricter requirements on industrial waste discharge and ecological protection."
+    },
+    {
+            "cn": "v. 使自由化，放宽限制",
+            "en": "liberalize",
+            "pos": "v.",
+            "example": "Many developing countries choose to liberalize their trade policies to attract foreign investment and promote economic globalization."
+    },
+    {
+            "cn": "n. 授权，命令，指令 v. 强制要求，授权",
+            "en": "mandate",
+            "pos": "n.",
+            "example": "The government has issued a mandate that all public buildings must be equipped with barrier-free facilities for the disabled."
+    },
+    {
+            "cn": "adj. 市政的，城市的，地方自治的",
+            "en": "municipal",
+            "pos": "adj.",
+            "example": "The municipal government is committed to improving urban greening and building a more livable city for residents."
+    },
+    {
+            "cn": "v. 使国有化，收归国有",
+            "en": "nationalize",
+            "pos": "v.",
+            "example": "Some countries choose to nationalize key industries such as energy and transportation to ensure national economic security."
+    },
+    {
+            "cn": "v. 谈判， 协商，议定",
+            "en": "negotiate",
+            "pos": "v.",
+            "example": "The government will negotiate with neighboring countries to resolve the border dispute in a peaceful and friendly manner."
+    },
+    {
+            "cn": "v. 提名，推荐，任命",
+            "en": "nominate",
+            "pos": "v.",
+            "example": "The committee is responsible for nominating candidates for the government's public service awards every year."
+    },
+    {
+            "cn": "v. 使无效，废除，取消",
+            "en": "nullify",
+            "pos": "v.",
+            "example": "The court has the right to nullify any government decision that violates the constitution and citizens' basic rights."
+    },
+    {
+            "cn": "n. 义务，责任，职责",
+            "en": "obligation",
+            "pos": "n.",
+            "example": "Providing basic education and medical care for citizens is the unshirkable obligation of every government."
+    },
+    {
+            "cn": "v. 监督，监管，俯瞰",
+            "en": "oversee",
+            "pos": "v.",
+            "example": "The regulatory authorities are required to oversee the implementation of government policies and ensure their effectiveness."
+    },
+    {
+            "cn": "n. 议会，国会",
+            "en": "parliament",
+            "pos": "n.",
+            "example": "The parliament plays a crucial role in reviewing and approving the government's annual budget and major policy proposals."
+    },
+    {
+            "cn": "n. 养老金，退休金，抚恤金",
+            "en": "pension",
+            "pos": "n.",
+            "example": "Improving the pension system is an important measure for the government to address the problem of an aging population."
+    },
+    {
+            "cn": "n. 请愿书，申请书 v. 请愿，请求",
+            "en": "petition",
+            "pos": "n.",
+            "example": "A group of citizens submitted a petition to the government, demanding stricter supervision of food safety."
+    },
+    {
+            "cn": "v. 批准，认可，签署生效",
+            "en": "ratify",
+            "pos": "v.",
+            "example": "The government needs to ratify the international environmental agreement to participate in global ecological protection efforts."
+    },
+    {
+            "cn": "v. 重新分配，再分配",
+            "en": "reallocate",
+            "pos": "v.",
+            "example": "The government plans to reallocate educational resources to narrow the gap between urban and rural schools."
+    },
+    {
+            "cn": "v. 管理，调节，规范",
+            "en": "regulate",
+            "pos": "v.",
+            "example": "It is essential for the government to regulate the online advertising market to protect consumers' legitimate rights and interests."
+    },
+    {
+            "cn": "n. 法规，规章，管理",
+            "en": "regulation",
+            "pos": "n.",
+            "example": "The new traffic regulations will impose heavier penalties on drunk driving to reduce traffic accidents."
+    },
+    {
+            "cn": "v./n. 废除，撤销，废止",
+            "en": "repeal",
+            "pos": "v./n.",
+            "example": "The government decided to repeal the outdated labor law and replace it with a more flexible and fair one."
+    },
+    {
+            "cn": "v. 撤销，废除，取消",
+            "en": "rescind",
+            "pos": "v.",
+            "example": "Due to public opposition, the government had to rescind the policy of increasing public transportation fares."
+    },
+    {
+            "cn": "n. 补贴，津贴，补助金",
+            "en": "subsidy",
+            "pos": "n.",
+            "example": "The government provides agricultural subsidies to encourage farmers to adopt environmentally friendly farming methods."
+    },
+    {
+            "cn": "n. 主权，主权国家，最高统治权",
+            "en": "sovereignty",
+            "pos": "n.",
+            "example": "Protecting national sovereignty and territorial integrity is the core responsibility of any government."
+    },
+    {
+            "cn": "n. 法令，法规，成文法",
+            "en": "statute",
+            "pos": "n.",
+            "example": "The statute clearly stipulates the rights and obligations of both the government and citizens in public health emergencies."
+    },
+    {
+            "cn": "v. 规定，明确要求，约定",
+            "en": "stipulate",
+            "pos": "v.",
+            "example": "The contract stipulates that the government will provide financial support for the project within three months."
+    },
+    {
+            "cn": "adj. 下级的，从属的 n. 下属 v. 使服从",
+            "en": "subordinate",
+            "pos": "adj.",
+            "example": "Local governments are subordinate to the central government and must implement national policies faithfully."
+    },
+    {
+            "cn": "n. 继承，继任，连续",
+            "en": "succession",
+            "pos": "n.",
+            "example": "The peaceful succession of government leaders is crucial for maintaining national stability and sustainable development."
+    },
+    {
+            "cn": "v. 取代，替代，接替",
+            "en": "supersede",
+            "pos": "v.",
+            "example": "The new policy will supersede the old one and bring more benefits to small and medium-sized enterprises."
+    },
+    {
+            "cn": "n. 监控，监视，监督",
+            "en": "surveillance",
+            "pos": "n.",
+            "example": "The government has strengthened surveillance of public places to prevent terrorist attacks and ensure public safety."
+    },
+    {
+            "cn": "n. 关税，税率，价目表",
+            "en": "tariff",
+            "pos": "n.",
+            "example": "The government decided to reduce tariffs on imported agricultural products to lower the cost of living for citizens."
+    },
+    {
+            "cn": "n. 税收，税制，征税",
+            "en": "taxation",
+            "pos": "n.",
+            "example": "A reasonable taxation system can adjust income distribution and promote social fairness and justice."
+    },
+    {
+            "cn": "n./v. 否决权，否决",
+            "en": "veto",
+            "pos": "n./v.",
+            "example": "The president has the power to veto any bill passed by the parliament if it is not in the national interest. 三、教育学术类（171-250）"
+    },
+    {
+            "cn": "v. 获得，习得，取得",
+            "en": "acquire",
+            "pos": "v.",
+            "example": "Students can acquire practical skills and professional knowledge through hands-on experiments and field trips."
+    },
+    {
+            "cn": "adj. 足够的，充足的，适当的",
+            "en": "adequate",
+            "pos": "adj.",
+            "example": "Schools should provide adequate learning resources and facilities to meet the diverse needs of students."
+    },
+    {
+            "cn": "adj. 青春期的 n. 青少年",
+            "en": "adolescent",
+            "pos": "adj.",
+            "example": "Adolescent education should focus on both academic performance and the cultivation of moral values and social responsibility."
+    },
+    {
+            "cn": "v. 采用，采纳，收养",
+            "en": "adopt",
+            "pos": "v.",
+            "example": "Many universities have adopted online teaching platforms to complement traditional classroom teaching and improve teaching efficiency."
+    },
+    {
+            "cn": "v. 分析，解析， 研究",
+            "en": "analyze",
+            "pos": "v.",
+            "example": "In academic research, scholars need to analyze data carefully and draw scientific conclusions based on objective evidence."
+    },
+    {
+            "cn": "n. 天资，天赋，才能",
+            "en": "aptitude",
+            "pos": "n.",
+            "example": "Teachers should identify students' aptitudes and provide personalized guidance to help them develop their potential."
+    },
+    {
+            "cn": "v. 评估，评价，评定",
+            "en": "assess",
+            "pos": "v.",
+            "example": "Schools should assess students' comprehensive abilities rather than just focusing on their test scores."
+    },
+    {
+            "cn": "n. 作业，任务，分配",
+            "en": "assignment",
+            "pos": "n.",
+            "example": "Completing this research assignment requires students to collect data from multiple sources and write a detailed report."
+    },
+    {
+            "cn": "v. 吸收，消化，同化",
+            "en": "assimilate",
+            "pos": "v.",
+            "example": "It is important for students to assimilate knowledge actively instead of just memorizing facts passively."
+    },
+    {
+            "cn": "adj. 自主的，自治的，自发的",
+            "en": "autonomous",
+            "pos": "adj.",
+            "example": "Autonomous learning is an essential skill for students to adapt to the challenges of higher education and future careers."
+    },
+    {
+            "cn": "adj. 权威的，官方的，有权威性的",
+            "en": "authoritative",
+            "pos": "adj.",
+            "example": "Students should refer to authoritative academic journals and books when conducting research to ensure the credibility of their findings."
+    },
+    {
+            "cn": "n. 偏见，偏爱，偏向 v. 使有偏见",
+            "en": "bias",
+            "pos": "n.",
+            "example": "Academic research should be objective and neutral, and researchers should avoid any personal bias that may affect their conclusions."
+    },
+    {
+            "cn": "n. 突破，重大进展，突破性成就",
+            "en": "breakthrough",
+            "pos": "n.",
+            "example": "The recent breakthrough in artificial intelligence technology has opened up new possibilities for educational innovation."
+    },
+    {
+            "cn": "n. 课程，课程体系，教学大纲",
+            "en": "curriculum",
+            "pos": "n.",
+            "example": "The school has revised its curriculum to include more practical courses that are closely related to the needs of the job market."
+    },
+    {
+            "cn": "n. 标准，准则，规范",
+            "en": "criterion",
+            "pos": "n.",
+            "example": "Creativity and critical thinking have become important criteria for evaluating students' academic performance in modern education."
+    },
+    {
+            "cn": "v. 致力于， 献身于，题献",
+            "en": "dedicate",
+            "pos": "v.",
+            "example": "Many scholars dedicate their entire lives to academic research in order to promote the progress of human knowledge."
+    },
+    {
+            "cn": "v. 推断，推论，演绎",
+            "en": "deduce",
+            "pos": "v.",
+            "example": "Students should learn to deduce logical conclusions from experimental data rather than relying on guesswork."
+    },
+    {
+            "cn": "n. 缺乏，不足，缺陷",
+            "en": "deficiency",
+            "pos": "n.",
+            "example": "A deficiency of practical training in traditional education may lead to students' inability to adapt to real-world work environments."
+    },
+    {
+            "cn": "v. 证明，展示，演示",
+            "en": "demonstrate",
+            "pos": "v.",
+            "example": "The experiment demonstrates that the new teaching method is more effective in improving students' learning motivation."
+    },
+    {
+            "cn": "v. 表示，意味着，指示",
+            "en": "denote",
+            "pos": "v.",
+            "example": "In academic writing, specific symbols are often used to denote different variables and concepts."
+    },
+    {
+            "cn": "v. 源自，获得，推导",
+            "en": "derive",
+            "pos": "v.",
+            "example": "Most scientific theories derive from a large number of experiments and observations conducted by researchers."
+    },
+    {
+            "cn": "adj. 描述性的，描写的，说明的",
+            "en": "descriptive",
+            "pos": "adj.",
+            "example": "Descriptive writing is an essential skill for students to express their ideas clearly in academic essays."
+    },
+    {
+            "cn": "v. 发现，察觉，探测",
+            "en": "detect",
+            "pos": "v.",
+            "example": "Advanced technology can help researchers detect subtle changes in experimental samples that are invisible to the naked eye."
+    },
+    {
+            "cn": "v. 诊断，判断，找出原因",
+            "en": "diagnose",
+            "pos": "v.",
+            "example": "Teachers should diagnose students' learning difficulties in a timely manner and provide targeted remedial teaching."
+    },
+    {
+            "cn": "v. 区分，辨别，使差异化",
+            "en": "differentiate",
+            "pos": "v.",
+            "example": "It is important for students to differentiate between facts and opinions when reading academic materials."
+    },
+    {
+            "cn": "n. 学科，纪律，训练 v. 管教",
+            "en": "discipline",
+            "pos": "n.",
+            "example": "Interdisciplinary research, which combines knowledge from multiple disciplines, has become a trend in modern academia."
+    },
+    {
+            "cn": "v. 传播，散布，宣传",
+            "en": "disseminate",
+            "pos": "v.",
+            "example": "Universities play a vital role in disseminating advanced knowledge and promoting cultural exchanges between countries."
+    },
+    {
+            "cn": "v. 区分，辨别，使杰出",
+            "en": "distinguish",
+            "pos": "v.",
+            "example": "Critical thinking skills enable students to distinguish between reliable and unreliable sources of information."
+    },
+    {
+            "cn": "n. 训练，操练，钻头 v. 钻孔，训练",
+            "en": "drill",
+            "pos": "n.",
+            "example": "Language drills are helpful for students to master grammar rules and improve their language proficiency."
+    },
+    {
+            "cn": "v. 复制，复印 adj. 复制的 n. 副本",
+            "en": "duplicate",
+            "pos": "v.",
+            "example": "Academic integrity rules prohibit students from duplicating others' research results without proper citation."
+    },
+    {
+            "cn": "v. 详细阐述，精心制作 adj. 详尽的",
+            "en": "elaborate",
+            "pos": "v.",
+            "example": "In the essay, students are required to elaborate their arguments with sufficient evidence and examples."
+    },
+    {
+            "cn": "v. 体现，包含，使具体化",
+            "en": "embody",
+            "pos": "v.",
+            "example": "The new teaching model embodies the concept of student-centered education and promotes active learning."
+    },
+    {
+            "cn": "v. 强调，着重，突出",
+            "en": "emphasize",
+            "pos": "v.",
+            "example": "Teachers should emphasize the importance of independent thinking and problem- solving skills in the learning process."
+    },
+    {
+            "cn": "adj. 经验主义的，实证的，经验的",
+            "en": "empirical",
+            "pos": "adj.",
+            "example": "Empirical research is crucial for verifying theoretical assumptions and advancing scientific knowledge."
+    },
+    {
+            "cn": "v. 启发，启蒙，教导",
+            "en": "enlighten",
+            "pos": "v.",
+            "example": "Good teachers can enlighten students' minds and inspire their curiosity about the world."
+    },
+    {
+            "cn": "v. 丰富，充实， 使富足",
+            "en": "enrich",
+            "pos": "v.",
+            "example": "Extracurricular activities such as reading clubs and science fairs can enrich students' campus life and broaden their horizons."
+    },
+    {
+            "cn": "v. 注册，入学，招收",
+            "en": "enroll",
+            "pos": "v.",
+            "example": "International students who want to enroll in this university need to submit their academic transcripts and language test scores."
+    },
+    {
+            "cn": "adj. 等价的，相等的 n. 等价物",
+            "en": "equivalent",
+            "pos": "adj.",
+            "example": "A bachelor's degree in this country is equivalent to that in most Western countries and is widely recognized internationally."
+    },
+    {
+            "cn": "v. 评价，评估，估价",
+            "en": "evaluate",
+            "pos": "v.",
+            "example": "Educators need to evaluate the effectiveness of teaching methods regularly and make adjustments according to students' feedback."
+    },
+    {
+            "cn": "v. 演变，进化，发展",
+            "en": "evolve",
+            "pos": "v.",
+            "example": "Educational systems evolve with the development of society to meet the changing needs of individuals and the workforce."
+    },
+    {
+            "cn": "v. 举例说明，例证，成为…的典范",
+            "en": "exemplify",
+            "pos": "v.",
+            "example": "This case study exemplifies how innovative teaching strategies can improve students' learning outcomes significantly."
+    },
+    {
+            "cn": "adj. 详尽的，彻底的，全面的",
+            "en": "exhaustive",
+            "pos": "adj.",
+            "example": "An exhaustive literature review is the foundation of any high-quality academic research paper."
+    },
+    {
+            "cn": "v. 阐述，详细说明，讲解",
+            "en": "expound",
+            "pos": "v.",
+            "example": "The professor will expound the key theories of economics in the lecture and answer students' questions."
+    },
+    {
+            "cn": "v. 促进，使便利，帮助",
+            "en": "facilitate",
+            "pos": "v.",
+            "example": "Group discussions can facilitate the exchange of ideas among students and enhance their collaborative skills."
+    },
+    {
+            "cn": "v. 培养，培育，促进",
+            "en": "foster",
+            "pos": "v.",
+            "example": "Schools should foster students' creativity and critical thinking to prepare them for future challenges."
+    },
+    {
+            "cn": "n. 基础，地基，基金会",
+            "en": "foundation",
+            "pos": "n.",
+            "example": "A solid foundation in basic sciences is essential for students who want to pursue advanced studies in engineering."
+    },
+    {
+            "cn": "n. 框架，结构，体系",
+            "en": "framework",
+            "pos": "n.",
+            "example": "The curriculum framework outlines the learning objectives and content for each grade level in the school."
+    },
+    {
+            "cn": "adj. 基本的，根本的 n. 基本原则",
+            "en": "fundamental",
+            "pos": "adj.",
+            "example": "Mastering fundamental concepts is more important than memorizing isolated facts in academic learning."
+    },
+    {
+            "cn": "n. 假设，假说，前提",
+            "en": "hypothesis",
+            "pos": "n.",
+            "example": "Before conducting the experiment, researchers need to formulate a clear hypothesis and design a test to verify it."
+    },
+    {
+            "cn": "v. 说明，阐明，举例说明",
+            "en": "illustrate",
+            "pos": "v.",
+            "example": "The textbook uses vivid examples and diagrams to illustrate complex scientific concepts for students."
+    },
+    {
+            "cn": "v. 模仿，效仿，仿制",
+            "en": "imitate",
+            "pos": "v.",
+            "example": "Language learners often imitate the pronunciation and intonation of native speakers to improve their oral skills."
+    },
+    {
+            "cn": "v. 沉浸，使沉浸于，浸没",
+            "en": "immerse",
+            "pos": "v.",
+            "example": "Immersing oneself in an English-speaking environment is an effective way to improve language proficiency quickly."
+    },
+    {
+            "cn": "v. 传授，给予，告知",
+            "en": "impart",
+            "pos": "v.",
+            "example": "Teachers not only impart knowledge but also guide students to develop correct values and life attitudes."
+    },
+    {
+            "cn": "v. 实施，执行，落实 n. 工具",
+            "en": "implement",
+            "pos": "v.",
+            "example": "The school will implement a new assessment system next semester to evaluate students' comprehensive abilities more fairly."
+    },
+    {
+            "cn": "v. 包含，合并，使并入",
+            "en": "incorporate",
+            "pos": "v.",
+            "example": "The new curriculum incorporates elements of project-based learning to enhance students' practical abilities."
+    },
+    {
+            "cn": "adj. 不可或缺的，必不可少的",
+            "en": "indispensable",
+            "pos": "adj.",
+            "example": "Reading is an indispensable part of academic learning and personal development."
+    },
+    {
+            "cn": "v. 诱导，促使，引起",
+            "en": "induce",
+            "pos": "v.",
+            "example": "Interesting teaching methods can induce students' interest in learning and improve their academic performance."
+    },
+    {
+            "cn": "v. 推断，推论，猜想",
+            "en": "infer",
+            "pos": "v.",
+            "example": "Students need to infer the author's attitude from the context and language used in the passage."
+    },
+    {
+            "cn": "adj. 内在的，固有的，与生俱来的",
+            "en": "inherent",
+            "pos": "adj.",
+            "example": "Every student has inherent learning potential, and it is the teacher's responsibility to tap into it."
+    },
+    {
+            "cn": "v. 发起，启动，传授",
+            "en": "initiate",
+            "pos": "v.",
+            "example": "The university initiated a research project on educational technology to explore new ways of teaching and learning."
+    },
+    {
+            "cn": "v. 创新，改革，革新",
+            "en": "innovate",
+            "pos": "v.",
+            "example": "Educators should constantly innovate teaching methods to meet the diverse needs of students in the digital age."
+    },
+    {
+            "cn": "n. 洞察力，洞悉，深刻见解",
+            "en": "insight",
+            "pos": "n.",
+            "example": "Reading classic literature can provide students with valuable insights into human nature and society."
+    },
+    {
+            "cn": "v. 教授，指导，指示",
+            "en": "instruct",
+            "pos": "v.",
+            "example": "The professor will instruct students on how to design scientific experiments and analyze data accurately."
+    },
+    {
+            "cn": "v. 整合， 融合，使并入",
+            "en": "integrate",
+            "pos": "v.",
+            "example": "Effective learning requires students to integrate new knowledge with what they have already learned."
+    },
+    {
+            "cn": "adj. 密集的，强化的，精深的",
+            "en": "intensive",
+            "pos": "adj.",
+            "example": "Intensive language courses are designed to help students improve their language skills in a relatively short time."
+    },
+    {
+            "cn": "v. 互动，交流，相互作用",
+            "en": "interact",
+            "pos": "v.",
+            "example": "Social media platforms allow people to interact with others from all over the world instantly."
+    },
+    {
+            "cn": "v. 互动，交流；相互作用",
+            "en": "interact",
+            "pos": "v.",
+            "example": "Students who actively interact with their peers and teachers tend to have a deeper understanding of academic knowledge."
+    },
+    {
+            "cn": "adj. 跨学科的，涉及多学科的",
+            "en": "interdisciplinary",
+            "pos": "adj.",
+            "example": "Interdisciplinary courses such as environmental economics are gaining popularity in universities around the world."
+    },
+    {
+            "cn": "n. 直觉，直觉力",
+            "en": "intuition",
+            "pos": "n.",
+            "example": "While intuition can be a useful guide, academic research requires rigorous reasoning rather than blind reliance on it."
+    },
+    {
+            "cn": "adj. 无效的；站不住脚的 n. 病人",
+            "en": "invalid",
+            "pos": "adj.",
+            "example": "An argument without sufficient evidence is considered invalid in academic debates and discussions."
+    },
+    {
+            "cn": "v. 援引，引用；唤起",
+            "en": "invoke",
+            "pos": "v.",
+            "example": "Researchers often invoke classic theories to support their arguments in academic papers."
+    },
+    {
+            "cn": "v. 证明…有理；为…辩护",
+            "en": "justify",
+            "pos": "v.",
+            "example": "Students must justify their research methods and data sources in the introduction section of their thesis."
+    },
+    {
+            "cn": "n. 自由度；纬度",
+            "en": "latitude",
+            "pos": "n.",
+            "example": "Teachers should give students some latitude to choose their research topics based on personal interests."
+    },
+    {
+            "cn": "v. 记住，熟记，背诵",
+            "en": "memorize",
+            "pos": "v.",
+            "example": "Memorizing vocabulary is a basic step, but understanding word usage is more important for language learning."
+    },
+    {
+            "cn": "adj. 一丝不苟的，细心的",
+            "en": "meticulous",
+            "pos": "adj.",
+            "example": "A meticulous literature review is essential for ensuring the originality and credibility of academic research."
+    },
+    {
+            "cn": "v. 省略，遗漏；忽略",
+            "en": "omit",
+            "pos": "v.",
+            "example": "You should not omit important data in your research report, as it may lead to incorrect conclusions."
+    },
+    {
+            "cn": "v. 使适应；确定方向 n. 东方",
+            "en": "orient",
+            "pos": "v.",
+            "example": "Freshman orientation programs help new students adapt to campus life and academic requirements quickly."
+    },
+    {
+            "cn": "n. 范式，范例；模式",
+            "en": "paradigm",
+            "pos": "n.",
+            "example": "The development of artificial intelligence has created a new paradigm for educational technology research."
+    },
+    {
+            "cn": "n. 观点，视角；远景",
+            "en": "perspective",
+            "pos": "n.",
+            "example": "Reading books from different cultural backgrounds can broaden students' perspectives and deepen their understanding of the world."
+    },
+    {
+            "cn": "v. 假定，假设；主张 n. 假设",
+            "en": "postulate",
+            "pos": "v.",
+            "example": "Many scientific theories are based on postulates that have not been fully proven but are widely accepted. 四、工作商业类（251-330）"
+    },
+    {
+            "cn": "v. 获得，取得；收购",
+            "en": "acquire",
+            "pos": "v.",
+            "example": "Large corporations often acquire small startups to gain access to new technologies and talent."
+    },
+    {
+            "cn": "v. 分配，分派；划拨",
+            "en": "allocate",
+            "pos": "v.",
+            "example": "Companies need to allocate sufficient funds to research and development to maintain their competitive edge."
+    },
+    {
+            "cn": "v. 分期偿还；摊销",
+            "en": "amortize",
+            "pos": "v.",
+            "example": "Most businesses amortize their loans over several years to reduce the financial burden on their cash flow."
+    },
+    {
+            "cn": "v. 评估，评价；估价",
+            "en": "appraise",
+            "pos": "v.",
+            "example": "Companies usually appraise employees' performance annually to determine promotions and salary increases."
+    },
+    {
+            "cn": "n. 套利，套汇 v. 套利交易",
+            "en": "arbitrage",
+            "pos": "n.",
+            "example": "Arbitrage opportunities often arise when there are price differences for the same product in different regions."
+    },
+    {
+            "cn": "n. 资产； 有用的东西；人才",
+            "en": "asset",
+            "pos": "n.",
+            "example": "Human resources are considered the most valuable asset of any modern enterprise."
+    },
+    {
+            "cn": "v./n. 审计，查账；旁听",
+            "en": "audit",
+            "pos": "v./n.",
+            "example": "All listed companies are required to undergo an annual financial audit to ensure transparency."
+    },
+    {
+            "cn": "adj. 自主的， 自治的；自发的",
+            "en": "autonomous",
+            "pos": "adj.",
+            "example": "Autonomous teams in companies can make decisions more quickly and adapt to market changes flexibly."
+    },
+    {
+            "cn": "adj. 破产的；彻底缺乏的 v. 使破产",
+            "en": "bankrupt",
+            "pos": "adj.",
+            "example": "Poor management and fierce market competition can bankrupt even well-established companies."
+    },
+    {
+            "cn": "v./n. 易货贸易，物物交换",
+            "en": "barter",
+            "pos": "v./n.",
+            "example": "In some developing regions, people still barter goods such as food and clothing instead of using cash."
+    },
+    {
+            "cn": "n. 基准，标杆 v. 以…为基准",
+            "en": "benchmark",
+            "pos": "n.",
+            "example": "Companies often use industry benchmarks to evaluate their performance and identify areas for improvement."
+    },
+    {
+            "cn": "n. 奖金， 红利；额外好处",
+            "en": "bonus",
+            "pos": "n.",
+            "example": "Many companies offer annual bonuses to motivate employees and improve their job satisfaction."
+    },
+    {
+            "cn": "v./n. 繁荣，兴旺；激增",
+            "en": "boom",
+            "pos": "v./n.",
+            "example": "The tech industry experienced a boom in the past decade due to the widespread application of digital technology."
+    },
+    {
+            "cn": "n. 品牌，商标 v. 打烙印；树立品牌",
+            "en": "brand",
+            "pos": "n.",
+            "example": "Building a strong brand image is crucial for companies to gain customer loyalty in competitive markets."
+    },
+    {
+            "cn": "n. 经纪人，中间商 v. 安排， 斡旋",
+            "en": "broker",
+            "pos": "n.",
+            "example": "Stock brokers play an important role in connecting investors with the financial market."
+    },
+    {
+            "cn": "n. 预算 v. 做预算，规划开支",
+            "en": "budget",
+            "pos": "n.",
+            "example": "Every business should create a detailed budget to manage its expenses and maximize profits."
+    },
+    {
+            "cn": "n. 主体，大部分；体积 adj. 大量的",
+            "en": "bulk",
+            "pos": "n.",
+            "example": "Companies usually purchase raw materials in bulk to reduce costs and improve profit margins."
+    },
+    {
+            "cn": "n. 官僚主义； 官僚机构",
+            "en": "bureaucracy",
+            "pos": "n.",
+            "example": "Excessive bureaucracy can slow down decision-making processes and reduce work efficiency in companies."
+    },
+    {
+            "cn": "n. 资本，资金；首都 adj. 大写的",
+            "en": "capital",
+            "pos": "n.",
+            "example": "Sufficient startup capital is essential for entrepreneurs to turn their business ideas into reality."
+    },
+    {
+            "cn": "v. 利用；资本化；大写",
+            "en": "capitalize",
+            "pos": "v.",
+            "example": "Smart entrepreneurs know how to capitalize on market trends to expand their business rapidly."
+    },
+    {
+            "cn": "n. 现金流，现金流量",
+            "en": "cashflow",
+            "pos": "n.",
+            "example": "A healthy cash flow is vital for the survival and development of small and medium- sized enterprises."
+    },
+    {
+            "cn": "v. 提供饮食；迎合，满足",
+            "en": "cater",
+            "pos": "v.",
+            "example": "Successful businesses always cater to the changing needs and preferences of their customers."
+    },
+    {
+            "cn": "v./n. 停止，终止，结束",
+            "en": "cease",
+            "pos": "v./n.",
+            "example": "The company decided to cease production of the product due to low sales and high production costs."
+    },
+    {
+            "cn": "v. 证明，证实；颁发证书",
+            "en": "certify",
+            "pos": "v.",
+            "example": "Authorized organizations certify products that meet certain quality and safety standards."
+    },
+    {
+            "cn": "n. 链条；连锁（店） v. 束缚",
+            "en": "chain",
+            "pos": "n.",
+            "example": "Fast-food chains have expanded rapidly around the world due to their standardized products and services."
+    },
+    {
+            "cn": "n. 渠道；频道；途径 v. 引导",
+            "en": "channel",
+            "pos": "n.",
+            "example": "Companies use various marketing channels such as online platforms and physical stores to sell their products."
+    },
+    {
+            "cn": "v. 合作，协作；勾结",
+            "en": "collaborate",
+            "pos": "v.",
+            "example": "Competing companies sometimes collaborate on research projects to share costs and risks."
+    },
+    {
+            "cn": "n. 抵押品，担保物 adj. 附带的",
+            "en": "collateral",
+            "pos": "n.",
+            "example": "Banks usually require borrowers to provide collateral such as property or vehicles to secure loans."
+    },
+    {
+            "cn": "n. 商品，日用品；大宗商品",
+            "en": "commodity",
+            "pos": "n.",
+            "example": "Oil, gold and wheat are some of the most traded commodities in the global market."
+    },
+    {
+            "cn": "n. 佣金；委员会；委托 v. 委托",
+            "en": "commission",
+            "pos": "n.",
+            "example": "Salespeople usually earn a commission based on the value of the products they sell."
+    },
+    {
+            "cn": "v. 通勤；减刑 n. 通勤路程",
+            "en": "commute",
+            "pos": "v.",
+            "example": "Many employees commute to work by public transportation to avoid traffic jams and save money."
+    },
+    {
+            "cn": "n. 补偿，赔偿；薪酬",
+            "en": "compensation",
+            "pos": "n.",
+            "example": "Companies should provide fair compensation to employees who are injured at work."
+    },
+    {
+            "cn": "n. 能力，胜任；权限",
+            "en": "competence",
+            "pos": "n.",
+            "example": "Professional competence and teamwork skills are two key factors for career success."
+    },
+    {
+            "cn": "adj. 竞争的；有竞争力的；好胜的",
+            "en": "competitive",
+            "pos": "adj.",
+            "example": "Companies must offer competitive prices and high-quality products to survive in the global market."
+    },
+    {
+            "cn": "n. 补充物；补语 v. 补充，补足",
+            "en": "complement",
+            "pos": "n.",
+            "example": "Online marketing can complement traditional advertising methods and reach a wider audience."
+    },
+    {
+            "cn": "n. 遵守，服从；合规",
+            "en": "compliance",
+            "pos": "n.",
+            "example": "Compliance with environmental regulations is mandatory for all manufacturing companies."
+    },
+    {
+            "cn": "v. 遵守，遵从，服从",
+            "en": "comply",
+            "pos": "v.",
+            "example": "All employees must comply with the company's code of conduct to maintain a professional work environment."
+    },
+    {
+            "cn": "n. 组成部分，成分；组件 adj. 组成的",
+            "en": "component",
+            "pos": "n.",
+            "example": "Quality control of each component is essential for ensuring the reliability of the final product."
+    },
+    {
+            "cn": "n. 让步；特许权；减价",
+            "en": "concession",
+            "pos": "n.",
+            "example": "The company made a concession on the price to secure the large order from the government."
+    },
+    {
+            "cn": "v. 同意，赞同；同时发生",
+            "en": "concur",
+            "pos": "v.",
+            "example": "Most board members concur that the company should invest more in sustainable development projects."
+    },
+    {
+            "cn": "adj. 连续的，连贯的",
+            "en": "consecutive",
+            "pos": "adj.",
+            "example": "The company has achieved consecutive years of growth in revenue thanks to its innovative products."
+    },
+    {
+            "cn": "n. 共识，一致意见",
+            "en": "consensus",
+            "pos": "n.",
+            "example": "After hours of discussion, the team reached a consensus on the new marketing strategy."
+    },
+    {
+            "cn": "v. 巩固，加强；合并",
+            "en": "consolidate",
+            "pos": "v.",
+            "example": "The company plans to consolidate its regional offices to reduce costs and improve efficiency."
+    },
+    {
+            "cn": "n. 约束，限制；强制",
+            "en": "constraint",
+            "pos": "n.",
+            "example": "Budget constraints often force companies to prioritize projects with higher potential returns."
+    },
+    {
+            "cn": "v. 咨询，请教；商议",
+            "en": "consult",
+            "pos": "v.",
+            "example": "Companies often consult financial experts before making major investment decisions."
+    },
+    {
+            "cn": "n. 顾问，咨询师",
+            "en": "consultant",
+            "pos": "n.",
+            "example": "Management consultants help companies solve problems and improve their operational efficiency."
+    },
+    {
+            "cn": "n. 合同，契约 v. 签订合同；收缩",
+            "en": "contract",
+            "pos": "n.",
+            "example": "The two companies signed a contract to cooperate on the development of a new technology product."
+    },
+    {
+            "cn": "v. 贡献，捐助；促成",
+            "en": "contribute",
+            "pos": "v.",
+            "example": "Every employee's hard work contributes to the overall success of the company."
+    },
+    {
+            "cn": "n. 贡献，捐助；投稿",
+            "en": "contribution",
+            "pos": "n.",
+            "example": "The employee's outstanding contribution to the project was recognized with a promotion and a bonus."
+    },
+    {
+            "cn": "v. 协调，配合；调节 n. 坐标",
+            "en": "coordinate",
+            "pos": "v.",
+            "example": "The marketing department needs to coordinate with the sales team to ensure the smooth launch of the new product."
+    },
+    {
+            "cn": "adj. 公司的，企业的；法人的",
+            "en": "corporate",
+            "pos": "adj.",
+            "example": "Corporate social responsibility is becoming increasingly important for companies to build a good public image."
+    },
+    {
+            "cn": "n. 公司，企业，法人",
+            "en": "corporation",
+            "pos": "n.",
+            "example": "Multinational corporations play a significant role in promoting economic globalization and cultural exchanges."
+    },
+    {
+            "cn": "adj. 划算的，成本效益好的",
+            "en": "cost-effective",
+            "pos": "adj.",
+            "example": "Investing in energy-efficient equipment is a cost-effective way for companies to reduce long-term operational costs."
+    },
+    {
+            "cn": "adj. 可信的，可靠的；有信誉的",
+            "en": "credible",
+            "pos": "adj.",
+            "example": "A company with a credible brand image is more likely to attract customers and investors."
+    },
+    {
+            "cn": "n. 信用，信贷；赞扬 v. 记入贷方",
+            "en": "credit",
+            "pos": "n.",
+            "example": "Small businesses often rely on bank credit to finance their daily operations and expansion plans."
+    },
+    {
+            "cn": "n. 标准，准则，规范",
+            "en": "criterion",
+            "pos": "n.",
+            "example": "Customer satisfaction is the most important criterion for evaluating the success of a business."
+    },
+    {
+            "cn": "adj. 累积的，渐增的",
+            "en": "cumulative",
+            "pos": "adj.",
+            "example": "The cumulative effect of years of hard work has made the company a leader in the industry."
+    },
+    {
+            "cn": "n. 货币，通货；流通，流行",
+            "en": "currency",
+            "pos": "n.",
+            "example": "The US dollar is one of the most widely used currencies in international trade and finance."
+    },
+    {
+            "cn": "n. 习俗，惯例；光顾 adj. 定制的",
+            "en": "custom",
+            "pos": "n.",
+            "example": "Many companies offer custom services to meet the unique needs of their high-end customers."
+    },
+    {
+            "cn": "v. 定制，个性化修改",
+            "en": "customize",
+            "pos": "v.",
+            "example": "Consumers increasingly prefer products that can be customized to reflect their personal tastes and preferences."
+    },
+    {
+            "cn": "n. 周期，循环；自行车 v. 骑自行车",
+            "en": "cycle",
+            "pos": "n.",
+            "example": "The business cycle consists of four phases: expansion, peak, contraction, and trough."
+    },
+    {
+            "cn": "n. 赤字，亏损；不足，缺陷",
+            "en": "deficit",
+            "pos": "n.",
+            "example": "The company reported a financial deficit in the first quarter due to lower-than- expected sales."
+    },
+    {
+            "cn": "n. 代表，委员 v. 授权，委托",
+            "en": "delegate",
+            "pos": "n.",
+            "example": "Effective managers know how to delegate tasks to their team members to improve work efficiency."
+    },
+    {
+            "cn": "adj. 故意的，蓄意的 v. 仔细考虑，商议",
+            "en": "deliberate",
+            "pos": "adj.",
+            "example": "The company made a deliberate decision to expand into the Asian market after conducting market research."
+    },
+    {
+            "cn": "v. 交付，递送；发表；接生",
+            "en": "deliver",
+            "pos": "v.",
+            "example": "Companies must deliver products on time to maintain customer satisfaction and loyalty."
+    },
+    {
+            "cn": "n. 交付，递送；分娩；演讲方式",
+            "en": "delivery",
+            "pos": "n.",
+            "example": "Free delivery services have become a key competitive advantage for many e- commerce companies."
+    },
+    {
+            "cn": "n. 需求，需要；要求 v. 要求，需要",
+            "en": "demand",
+            "pos": "n.",
+            "example": "The demand for renewable energy products has increased significantly in recent years due to environmental concerns."
+    },
+    {
+            "cn": "adj. 人口统计的，人口学的 n. 人口统计数据",
+            "en": "demographic",
+            "pos": "adj.",
+            "example": "Companies use demographic data to identify their target customers and develop targeted marketing strategies."
+    },
+    {
+            "cn": "n. 存款；定金；押金 v. 存放；沉积",
+            "en": "deposit",
+            "pos": "n.",
+            "example": "Landlords usually require tenants to pay a security deposit before moving into a rental property."
+    },
+    {
+            "cn": "v. 贬值，折旧；贬低",
+            "en": "depreciate",
+            "pos": "v.",
+            "example": "Electronic products such as smartphones and laptops tend to depreciate quickly due to rapid technological advancements."
+    },
+    {
+            "cn": "n. 经济萧条，不景气；抑郁",
+            "en": "depression",
+            "pos": "n.",
+            "example": "The Great Depression of the 1930s had a profound impact on the global economy and people's lives."
+    },
+    {
+            "cn": "v. 源自，获得；推导",
+            "en": "derive",
+            "pos": "v.",
+            "example": "Most of the company's profits are derived from its overseas markets rather than the domestic market."
+    },
+    {
+            "cn": "v. 指定，指派；标明",
+            "en": "designate",
+            "pos": "v.",
+            "example": "The board of directors designated Mr. Smith as the new CEO of the company starting next month."
+    },
+    {
+            "cn": "v. 偏离，背离；越轨",
+            "en": "deviate",
+            "pos": "v.",
+            "example": "Employees who deviate from the company's safety regulations may face disciplinary action."
+    },
+    {
+            "cn": "v. 设计，发明；策划",
+            "en": "devise",
+            "pos": "v.",
+            "example": "Engineers need to devise innovative solutions to solve the technical problems faced by the company."
+    },
+    {
+            "cn": "v. 区分，辨别；使差异化",
+            "en": "differentiate",
+            "pos": "v.",
+            "example": "Companies need to differentiate their products from competitors to gain a larger market share."
+    },
+    {
+            "cn": "v. 扩散，传播；弥漫 adj. 扩散的",
+            "en": "diffuse",
+            "pos": "v.",
+            "example": "Social media platforms help companies diffuse information about their products to a global audience."
+    },
+    {
+            "cn": "v. 稀释，冲淡；削弱 adj. 稀释的",
+            "en": "dilute",
+            "pos": "v.",
+            "example": "Merging with a smaller company may dilute the ownership of the original shareholders."
+    },
+    {
+            "cn": "n. 维度，尺寸；方面，层面",
+            "en": "dimension",
+            "pos": "n.",
+            "example": "Customer service is an important dimension of business success that should not be overlooked."
+    },
+    {
+            "cn": "v. 减少，降低；削弱",
+            "en": "diminish",
+            "pos": "v.",
+            "example": "Intense competition in the market may diminish the company's profit margins in the short term. 五、个人生活类（331-410）"
+    },
+    {
+            "cn": "v. 遵守，遵循；容忍",
+            "en": "abide",
+            "pos": "v.",
+            "example": "Individuals who abide by social norms and moral principles are more likely to gain respect from others."
+    },
+    {
+            "cn": "adj. 丰富的，充裕的，大量的",
+            "en": "abundant",
+            "pos": "adj.",
+            "example": "A life with abundant experiences, both good and bad, can help people grow into more mature individuals."
+    },
+    {
+            "cn": "v. 容纳，提供住宿；适应，迁就",
+            "en": "accommodate",
+            "pos": "v.",
+            "example": "Learning to accommodate different personalities is essential for maintaining harmonious relationships with others."
+    },
+    {
+            "cn": "v. 使熟悉，使了解；认识",
+            "en": "acquaint",
+            "pos": "v.",
+            "example": "Traveling to different countries can acquaint people with diverse cultures and ways of life."
+    },
+    {
+            "cn": "v. 粘附，附着；遵守，坚持",
+            "en": "adhere",
+            "pos": "v.",
+            "example": "People who adhere to their goals and work hard are more likely to achieve success in their personal lives."
+    },
+    {
+            "cn": "adj. 爱冒险的，大胆开拓的；充满新奇体验的",
+            "en": "adventurous",
+            "pos": "adj.",
+            "example": "An adventurous spirit enables individuals to step out of their comfort zones and explore more possibilities in life."
+    },
+    {
+            "cn": "adj. 富裕的，富足的；丰富的",
+            "en": "affluent",
+            "pos": "adj.",
+            "example": "Growing up in an affluent family does not necessarily guarantee a person's happiness and personal growth."
+    },
+    {
+            "cn": "adj. 友好的，和睦的，友善的",
+            "en": "amicable",
+            "pos": "adj.",
+            "example": "Maintaining an amicable relationship with neighbors is beneficial to creating a harmonious living environment."
+    },
+    {
+            "cn": "n. 抱负，志向，渴望",
+            "en": "aspiration",
+            "pos": "n.",
+            "example": "Clear aspirations can serve as a driving force for individuals to overcome difficulties and pursue their dreams."
+    },
+    {
+            "cn": "adj. 勤奋的，刻苦的，兢兢业业的",
+            "en": "assiduous",
+            "pos": "adj.",
+            "example": "Assiduous people are more likely to accumulate knowledge and skills, laying a solid foundation for their future lives."
+    },
+    {
+            "cn": "adj. 真实的，真正的；真诚的，可靠的",
+            "en": "authentic",
+            "pos": "adj.",
+            "example": "Living an authentic life means being honest with oneself and not pretending to be someone else to please others."
+    },
+    {
+            "cn": "n. 厌恶，反感，讨厌",
+            "en": "aversion",
+            "pos": "n.",
+            "example": "Many people have an aversion to tedious and repetitive daily routines and are eager to seek changes in life."
+    },
+    {
+            "cn": "n. 丧亲之痛，失去亲人",
+            "en": "bereavement",
+            "pos": "n.",
+            "example": "Bereavement is an inevitable part of life, and learning to cope with it is essential for maintaining mental health."
+    },
+    {
+            "cn": "n. 极乐，狂喜，无上幸福",
+            "en": "bliss",
+            "pos": "n.",
+            "example": "For many people, the bliss of life lies in the trivial moments spent with family and friends."
+    },
+    {
+            "cn": "adj. 坦率的，直言不讳的；坦诚的",
+            "en": "candid",
+            "pos": "adj.",
+            "example": "Candid communication is the key to resolving conflicts and maintaining healthy interpersonal relationships."
+    },
+    {
+            "cn": "n. 满足，知足，心满意足",
+            "en": "contentment",
+            "pos": "n.",
+            "example": "Contentment does not mean giving up on progress, but rather cherishing what one already has in life."
+    },
+    {
+            "cn": "adj. 热情友好的，热诚的；由衷的",
+            "en": "cordial",
+            "pos": "adj.",
+            "example": "A cordial smile and a sincere greeting can quickly shorten the distance between strangers."
+    },
+    {
+            "cn": "n. 勤奋，用功，孜孜不倦",
+            "en": "diligence",
+            "pos": "n.",
+            "example": "Diligence is a valuable personal quality that can help individuals achieve their goals regardless of their backgrounds."
+    },
+    {
+            "cn": "n. 性格，性情，气质；倾向",
+            "en": "disposition",
+            "pos": "n.",
+            "example": "A cheerful disposition enables people to face setbacks optimistically and maintain a positive attitude towards life."
+    },
+    {
+            "cn": "adj. 多种多样的，形形色色的；不同的",
+            "en": "diverse",
+            "pos": "adj.",
+            "example": "Experiencing diverse cultures and lifestyles can enrich individuals' life experiences and broaden their horizons."
+    },
+    {
+            "cn": "adj. 有同理心的，能共情的",
+            "en": "empathetic",
+            "pos": "adj.",
+            "example": "An empathetic person is more likely to build deep and lasting relationships with others in daily life."
+    },
+    {
+            "cn": "v./n. 努力，竭力，尝试",
+            "en": "endeavor",
+            "pos": "v./n.",
+            "example": "Every individual should endeavor to realize their personal value while contributing to society."
+    },
+    {
+            "cn": "v. 丰富，充实； 使富足",
+            "en": "enrich",
+            "pos": "v.",
+            "example": "Reading widely and traveling frequently can greatly enrich one's spiritual world and personal experience."
+    },
+    {
+            "cn": "adj. 极其重要的，必不可少的；本质的 n. 必需品",
+            "en": "essential",
+            "pos": "adj.",
+            "example": "Maintaining a balanced diet and regular exercise are essential for people to keep healthy and energetic."
+    },
+    {
+            "cn": "adj. 道德的，伦理的；合乎道德的",
+            "en": "ethical",
+            "pos": "adj.",
+            "example": "Adhering to ethical principles in daily life is the foundation of being a respected and trustworthy person."
+    },
+    {
+            "cn": "adj. 模范的，榜样的；典型的",
+            "en": "exemplary",
+            "pos": "adj.",
+            "example": "Her exemplary behavior of helping the elderly and caring for the disabled has set a good example for the whole community."
+    },
+    {
+            "cn": "n. 外向的人，性格外向者",
+            "en": "extrovert",
+            "pos": "n.",
+            "example": "Extroverts tend to enjoy social activities and are good at communicating and interacting with different people."
+    },
+    {
+            "cn": "n. 坚韧，刚毅，不屈不挠",
+            "en": "fortitude",
+            "pos": "n.",
+            "example": "Great fortitude is required for individuals to overcome difficulties and challenges in their life journey."
+    },
+    {
+            "cn": "n. 节俭，节约，俭朴",
+            "en": "frugality",
+            "pos": "n.",
+            "example": "Frugality is a traditional virtue that helps individuals manage their finances wisely and avoid wasteful consumption."
+    },
+    {
+            "cn": "adj. 真的，非人造的；真诚的，真心的",
+            "en": "genuine",
+            "pos": "adj.",
+            "example": "Genuine friendship is based on mutual trust and respect, rather than material interests or utilitarian purposes."
+    },
+    {
+            "cn": "adj. 合群的，爱社交的；群居的",
+            "en": "gregarious",
+            "pos": "adj.",
+            "example": "Gregarious people usually have a wide circle of friends and enjoy participating in group activities."
+    },
+    {
+            "cn": "n. 诚实，正直，坦率",
+            "en": "honesty",
+            "pos": "n.",
+            "example": "Honesty is one of the most important personal qualities that can help people gain the trust of others."
+    },
+    {
+            "cn": "adj. 谦逊的， 谦虚的；卑微的 v. 使谦逊",
+            "en": "humble",
+            "pos": "adj.",
+            "example": "A humble person is more likely to learn from others and make continuous progress in life."
+    },
+    {
+            "cn": "adj. 冲动的，易冲动的；受感情驱使的",
+            "en": "impulsive",
+            "pos": "adj.",
+            "example": "Impulsive decisions often lead to regrettable consequences, so it is important to think twice before acting."
+    },
+    {
+            "cn": "n. 独立，自主，自立",
+            "en": "independence",
+            "pos": "n.",
+            "example": "Cultivating independence from an early age is crucial for young people to adapt to society and live on their own."
+    },
+    {
+            "cn": "v. 沉溺于，沉迷于；纵容， 迁就",
+            "en": "indulge",
+            "pos": "v.",
+            "example": "It is acceptable to indulge in hobbies occasionally, but one should not let them interfere with work or study."
+    },
+    {
+            "cn": "n. 诚实正直，诚信；完整，完全",
+            "en": "integrity",
+            "pos": "n.",
+            "example": "A person of integrity will always stick to their principles and never compromise on moral standards."
+    },
+    {
+            "cn": "n. 内向的人，性格内向者",
+            "en": "introvert",
+            "pos": "n.",
+            "example": "Introverts tend to focus on their inner world and are good at thinking deeply about problems and ideas."
+    },
+    {
+            "cn": "adj. 谦虚的，谦逊的；适度的，适中的",
+            "en": "modest",
+            "pos": "adj.",
+            "example": "Modest people are more popular among others because they never show off their achievements or abilities."
+    },
+    {
+            "cn": "n. 道德，道义；道德准则，品行",
+            "en": "morality",
+            "pos": "n.",
+            "example": "Personal morality is closely related to social morality, and every individual should strive to improve their moral standards."
+    },
+    {
+            "cn": "adj. 乐于助人的，热心的；体贴的",
+            "en": "obliging",
+            "pos": "adj.",
+            "example": "An obliging person is always ready to help others in need, which makes them popular in social interactions."
+    },
+    {
+            "cn": "adj. 乐观的，乐观主义的",
+            "en": "optimistic",
+            "pos": "adj.",
+            "example": "Being optimistic can help people cope with difficulties and setbacks more effectively in their lives."
+    },
+    {
+            "cn": "n. 毅力，韧性，坚持不懈",
+            "en": "perseverance",
+            "pos": "n.",
+            "example": "Perseverance is the key to success, as most goals require long-term efforts and continuous attempts to achieve."
+    },
+    {
+            "cn": "n. 谨慎，审慎，精明",
+            "en": "prudence",
+            "pos": "n.",
+            "example": "Prudence is an important personal quality that helps people avoid unnecessary risks and make wise decisions."
+    },
+    {
+            "cn": "adj. 准时的，守时的，按时的",
+            "en": "punctual",
+            "pos": "adj.",
+            "example": "Being punctual is a basic courtesy in social interactions and shows respect for others' time."
+    },
+    {
+            "cn": "n. 正直，公正，品行端正",
+            "en": "rectitude",
+            "pos": "n.",
+            "example": "Rectitude is a valuable personal trait that enables people to gain the respect and trust of others."
+    },
+    {
+            "cn": "adj. 不情愿的，勉强的，犹豫的",
+            "en": "reluctant",
+            "pos": "adj.",
+            "example": "Many people are reluctant to change their lifestyles, even if the current way of life is not healthy or efficient."
+    },
+    {
+            "cn": "adj. 有韧性的，能迅速恢复的；适应性强的",
+            "en": "resilient",
+            "pos": "adj.",
+            "example": "A resilient person can quickly recover from failures and setbacks and continue to pursue their goals."
+    },
+    {
+            "cn": "n. 睿智，聪慧，明智",
+            "en": "sagacity",
+            "pos": "n.",
+            "example": "Sagacity comes from rich life experiences and continuous learning, rather than just age or status."
+    },
+    {
+            "cn": "n. 真诚，诚挚，真挚",
+            "en": "sincerity",
+            "pos": "n.",
+            "example": "Sincerity is the cornerstone of building good interpersonal relationships and maintaining long-term friendships."
+    },
+    {
+            "cn": "n. 清醒，冷静；节制，适度",
+            "en": "sobriety",
+            "pos": "n.",
+            "example": "Sobriety is essential for people to make rational decisions, especially when facing important choices in life."
+    },
+    {
+            "cn": "adj. 关切的，体贴的；热心的",
+            "en": "solicitous",
+            "pos": "adj.",
+            "example": "A solicitous attitude towards family members can enhance the bond between family members and create a warm family atmosphere."
+    },
+    {
+            "cn": "adj. 自发的，不由自主的；自然的",
+            "en": "spontaneous",
+            "pos": "adj.",
+            "example": "Spontaneous acts of kindness can bring warmth to others and make the world a more beautiful place."
+    },
+    {
+            "cn": "adj. 坚定的，不动摇的；忠贞不渝的",
+            "en": "steadfast",
+            "pos": "adj.",
+            "example": "A steadfast belief can help people stay focused and not be distracted by external temptations."
+    },
+    {
+            "cn": "n. 节制， 克制；戒酒",
+            "en": "temperance",
+            "pos": "n.",
+            "example": "Temperance in eating and drinking is an important way to maintain physical health and mental clarity."
+    },
+    {
+            "cn": "n. 宽容，容忍；忍耐力",
+            "en": "tolerance",
+            "pos": "n.",
+            "example": "Tolerance of different cultures and lifestyles is essential for building a harmonious and diverse society."
+    },
+    {
+            "cn": "adj. 平静的，宁静的，安宁的",
+            "en": "tranquil",
+            "pos": "adj.",
+            "example": "A tranquil mind enables people to think clearly and deal with problems more effectively in daily life."
+    },
+    {
+            "cn": "adj. 直立的，挺直的；正直的，诚实的",
+            "en": "upright",
+            "pos": "adj.",
+            "example": "An upright person will always uphold justice and never do anything that violates moral principles."
+    },
+    {
+            "cn": "adj. 多才多艺的，有多种技能的；多功能的",
+            "en": "versatile",
+            "pos": "adj.",
+            "example": "A versatile person has more advantages in the job market and can adapt to different work environments quickly."
+    },
+    {
+            "cn": "adj. 警惕的，警觉的； 警戒的",
+            "en": "vigilant",
+            "pos": "adj.",
+            "example": "Being vigilant about potential risks in life can help people avoid unnecessary losses and dangers."
+    },
+    {
+            "cn": "n. 活力，生命力，精力",
+            "en": "vitality",
+            "pos": "n.",
+            "example": "Regular exercise and a positive attitude can help people maintain their vitality and enjoy a fulfilling life."
+    },
+    {
+            "cn": "n. 温暖，暖和；热情，热心",
+            "en": "warmth",
+            "pos": "n.",
+            "example": "The warmth of family love is the most precious thing in life and can give people the courage to face difficulties."
+    },
+    {
+            "cn": "adj. 有益健康的，有益身心的；健康的",
+            "en": "wholesome",
+            "pos": "adj.",
+            "example": "Wholesome food and regular exercise are essential for maintaining good physical and mental health."
+    },
+    {
+            "cn": "n. 热情，热忱，狂热",
+            "en": "zeal",
+            "pos": "n.",
+            "example": "Zeal for learning can drive people to continuously acquire new knowledge and improve their personal abilities."
+    },
+    {
+            "cn": "adj. 热情的，热心的，积极的",
+            "en": "zealous",
+            "pos": "adj.",
+            "example": "A zealous attitude towards work can help people achieve better results and gain more opportunities for development."
+    },
+    {
+            "cn": "n. 友好，和睦，友善",
+            "en": "amicability",
+            "pos": "n.",
+            "example": "Amicability between neighbors is the foundation of a harmonious community and a happy life."
+    },
+    {
+            "cn": "adj. 满足的，满意的 n. 内容；满足",
+            "en": "content",
+            "pos": "adj.",
+            "example": "Learning to be content with what you have is the key to finding happiness in daily life."
+    },
+    {
+            "cn": "adj. 有礼貌的，谦恭的，体贴的",
+            "en": "courteous",
+            "pos": "adj.",
+            "example": "Being courteous to others is a basic requirement of social etiquette and can reflect a person's good upbringing."
+    },
+    {
+            "cn": "n. 可信性，可靠性，信誉",
+            "en": "credibility",
+            "pos": "n.",
+            "example": "A person's credibility is built through long-term honest behavior and cannot be gained overnight."
+    },
+    {
+            "cn": "adj. 可靠的，可信赖的，值得依靠的",
+            "en": "dependable",
+            "pos": "adj.",
+            "example": "A dependable friend is someone who will always be there for you when you are in need of help."
+    },
+    {
+            "cn": "adv. 共情地，有同理心地",
+            "en": "empathetically",
+            "pos": "adv.",
+            "example": "Listening empathetically to others' problems can make them feel understood and supported."
+    },
+    {
+            "cn": "adj. 热情的，热心的，满腔热忱的",
+            "en": "enthusiastic",
+            "pos": "adj.",
+            "example": "An enthusiastic attitude towards life can make people more positive and optimistic, even in difficult times."
+    },
+    {
+            "cn": "n. 柔韧性，弹性；灵活性，适应性",
+            "en": "flexibility",
+            "pos": "n.",
+            "example": "Flexibility in thinking enables people to adapt to changes quickly and find solutions to problems more easily."
+    },
+    {
+            "cn": "n. 忍耐，克制，宽容",
+            "en": "forbearance",
+            "pos": "n.",
+            "example": "Forbearance is an important personal quality that helps people avoid conflicts and maintain good relationships with others."
+    },
+    {
+            "cn": "n. 慷慨，大方，宽宏大量",
+            "en": "generosity",
+            "pos": "n.",
+            "example": "Generosity is a virtue that can bring happiness to both the giver and the receiver."
+    },
+    {
+            "cn": "adj. 和蔼的，慈祥的；优雅的，雅致的",
+            "en": "gracious",
+            "pos": "adj.",
+            "example": "A gracious person is always polite and kind to others, regardless of their social status or background."
+    },
+    {
+            "cn": "adj. 勤奋的，勤劳的，刻苦的",
+            "en": "industrious",
+            "pos": "adj.",
+            "example": "Industrious people are more likely to achieve their goals and realize their personal value in life."
+    },
+    {
+            "cn": "n. 忠诚，忠心，忠实",
+            "en": "loyalty",
+            "pos": "n.",
+            "example": "Loyalty is an important part of friendship and can help maintain long-term and stable relationships."
+    },
+    {
+            "cn": "n. 耐心，忍耐，耐性",
+            "en": "patience",
+            "pos": "n.",
+            "example": "Patience is essential for learning new skills and achieving long-term goals, as success rarely comes overnight."
+    },
+    {
+            "cn": "n. 可靠性，可信度，可信赖性",
+            "en": "reliability",
+            "pos": "n.",
+            "example": "Reliability is a key factor in building trust between people and maintaining healthy interpersonal relationships. 六、工作职业类（411-500）"
+    },
+    {
+            "cn": "v. 完成，实现，达成",
+            "en": "accomplish",
+            "pos": "v.",
+            "example": "Setting clear goals and making detailed plans can help employees accomplish their work tasks more efficiently."
+    },
+    {
+            "cn": "adj. 熟练的，擅长的，精通的 n. 能手，专家",
+            "en": "adept",
+            "pos": "adj.",
+            "example": "Being adept at communication and teamwork is essential for employees to succeed in modern workplaces."
+    },
+    {
+            "cn": "n. 管理，行政； 行政部门",
+            "en": "administration",
+            "pos": "n.",
+            "example": "Efficient administration is crucial for the smooth operation of a company and the improvement of work efficiency."
+    },
+    {
+            "cn": "n. 议事日程，会议议程；工作计划",
+            "en": "agenda",
+            "pos": "n.",
+            "example": "Distributing the meeting agenda in advance can help participants prepare better and make the meeting more productive."
+    },
+    {
+            "cn": "v. 分配，分派；划拨 （资金）",
+            "en": "allocate",
+            "pos": "v.",
+            "example": "Managers need to allocate tasks reasonably according to employees' strengths and skills to maximize work efficiency."
+    },
+    {
+            "cn": "n. 评估，评价；鉴定，估价",
+            "en": "appraisal",
+            "pos": "n.",
+            "example": "Regular performance appraisals can help employees understand their strengths and weaknesses and improve their work performance."
+    },
+    {
+            "cn": "n. 天资，天赋，才能",
+            "en": "aptitude",
+            "pos": "n.",
+            "example": "Identifying employees' aptitudes and assigning them to suitable positions can improve their job satisfaction and performance."
+    },
+    {
+            "cn": "v. 评估，评价；评定",
+            "en": "assess",
+            "pos": "v.",
+            "example": "Employers need to assess candidates' professional skills and personal qualities during the recruitment process."
+    },
+    {
+            "cn": "v. 分配，指派；指定",
+            "en": "assign",
+            "pos": "v.",
+            "example": "Managers should assign tasks based on employees' abilities and workload to avoid overburdening any individual."
+    },
+    {
+            "cn": "v. 帮助，协助，援助",
+            "en": "assist",
+            "pos": "v.",
+            "example": "Team members should assist each other to overcome difficulties and complete the project on time."
+    },
+    {
+            "cn": "n. 权威，权力；当局，官方；专家",
+            "en": "authority",
+            "pos": "n.",
+            "example": "Employees should respect the authority of their supervisors while also expressing their own opinions and suggestions."
+    },
+    {
+            "cn": "n. 自治，自主权；自主能力",
+            "en": "autonomy",
+            "pos": "n.",
+            "example": "Giving employees a certain degree of autonomy can enhance their sense of responsibility and work motivation."
+    },
+    {
+            "cn": "n. 奖金， 红利；额外好处",
+            "en": "bonus",
+            "pos": "n.",
+            "example": "Performance-based bonuses can effectively motivate employees to work harder and improve their job performance."
+    },
+    {
+            "cn": "n. 官僚主义； 官僚机构",
+            "en": "bureaucracy",
+            "pos": "n.",
+            "example": "Excessive bureaucracy in the workplace can slow down decision-making and reduce employees' work efficiency."
+    },
+    {
+            "cn": "n. 职业，事业；生涯",
+            "en": "career",
+            "pos": "n.",
+            "example": "Choosing a suitable career based on personal interests and abilities is crucial for long-term career success."
+    },
+    {
+            "cn": "v. 合作，协作，配合",
+            "en": "collaborate",
+            "pos": "v.",
+            "example": "Employees who collaborate effectively with their colleagues are more likely to achieve better results in their work."
+    },
+    {
+            "cn": "n. 同事，同僚，同行",
+            "en": "colleague",
+            "pos": "n.",
+            "example": "Maintaining good relationships with colleagues can create a positive work environment and improve team morale."
+    },
+    {
+            "cn": "n. 能力，胜任；权限",
+            "en": "competence",
+            "pos": "n.",
+            "example": "Continuous learning and skill improvement are essential for employees to maintain their professional competence in a competitive job market."
+    },
+    {
+            "cn": "adj. 竞争的；有竞争力的；好胜的",
+            "en": "competitive",
+            "pos": "adj.",
+            "example": "A competitive salary and good benefits are important factors for companies to attract and retain talented employees."
+    },
+    {
+            "cn": "n. 补充物，补足物 v. 补充，补足",
+            "en": "complement",
+            "pos": "n.",
+            "example": "Different team members' skills and strengths can complement each other, making the team more efficient and effective."
+    },
+    {
+            "cn": "n. 遵守，服从；合规",
+            "en": "compliance",
+            "pos": "n.",
+            "example": "Compliance with company policies and regulations is a basic requirement for all employees to maintain a professional work environment."
+    },
+    {
+            "cn": "v. 构思，构想；怀孕",
+            "en": "conceive",
+            "pos": "v.",
+            "example": "Employees who can conceive innovative ideas and solutions are highly valued in modern companies."
+    },
+    {
+            "cn": "v. 商议，讨论；授予（荣誉、学位等）",
+            "en": "confer",
+            "pos": "v.",
+            "example": "Managers should confer with their team members before making important decisions that affect the whole team."
+    },
+    {
+            "cn": "adj. 机密的，保密的；秘密的",
+            "en": "confidential",
+            "pos": "adj.",
+            "example": "Employees are required to keep confidential company information such as trade secrets and customer data."
+    },
+    {
+            "cn": "v. 巩固，加强；合并",
+            "en": "consolidate",
+            "pos": "v.",
+            "example": "After achieving initial success, employees need to consolidate their skills and knowledge to further their careers."
+    },
+    {
+            "cn": "v. 巩固（地位）；强化；合并",
+            "en": "consolidate",
+            "pos": "v.",
+            "example": "To succeed in the long term, professionals must consolidate their expertise through continuous learning and practice."
+    },
+    {
+            "cn": "n. 顾问，咨询师；会诊医生",
+            "en": "consultant",
+            "pos": "n.",
+            "example": "Many companies hire management consultants to optimize their operational efficiency and develop growth strategies."
+    },
+    {
+            "cn": "v. 贡献；捐助；促成",
+            "en": "contribute",
+            "pos": "v.",
+            "example": "Every team member should contribute their unique skills to ensure the successful completion of the project."
+    },
+    {
+            "cn": "v. 协调；统筹；配合 n. 坐标",
+            "en": "coordinate",
+            "pos": "v.",
+            "example": "The project manager's main responsibility is to coordinate the efforts of various departments and avoid delays."
+    },
+    {
+            "cn": "adj. 公司的；企业的；法人的",
+            "en": "corporate",
+            "pos": "adj.",
+            "example": "Corporate culture plays a vital role in shaping employees' attitudes and improving team cohesion."
+    },
+    {
+            "cn": "n. 资历；凭证；证书",
+            "en": "credentials",
+            "pos": "n.",
+            "example": "Strong academic credentials and practical experience are essential for landing a competitive job in the tech industry."
+    },
+    {
+            "cn": "n. 标准；准则；尺度",
+            "en": "criterion",
+            "pos": "n.",
+            "example": "Customer satisfaction is the most important criterion for assessing the success of a service-oriented business."
+    },
+    {
+            "cn": "n. 截止日期；最后期限",
+            "en": "deadline",
+            "pos": "n.",
+            "example": "Meeting the project deadline is crucial for maintaining good relationships with clients and ensuring repeat business."
+    },
+    {
+            "cn": "v. 致力于；献身于；题献",
+            "en": "dedicate",
+            "pos": "v.",
+            "example": "Successful entrepreneurs often dedicate most of their time and energy to their businesses in the early stages."
+    },
+    {
+            "cn": "v. 证明；展示；演示",
+            "en": "demonstrate",
+            "pos": "v.",
+            "example": "Job applicants should demonstrate their problem-solving skills through specific examples during interviews."
+    },
+    {
+            "cn": "n. 副手；代理人；副职",
+            "en": "deputy",
+            "pos": "n.",
+            "example": "The deputy manager is responsible for overseeing daily operations when the manager is on business trips."
+    },
+    {
+            "cn": "v. 获得；源自；推导",
+            "en": "derive",
+            "pos": "v.",
+            "example": "Many professionals derive a sense of accomplishment from solving complex problems and helping others."
+    },
+    {
+            "cn": "v. 委派；授权；委托 n. 代表",
+            "en": "delegate",
+            "pos": "v.",
+            "example": "Effective leaders know how to delegate tasks appropriately instead of trying to do everything themselves."
+    },
+    {
+            "cn": "n. 勤奋；用功；仔细",
+            "en": "diligence",
+            "pos": "n.",
+            "example": "Diligence and attention to detail are key qualities that employers look for in potential employees."
+    },
+    {
+            "cn": "n. 方面；维度；尺寸",
+            "en": "dimension",
+            "pos": "n.",
+            "example": "When evaluating job candidates, employers consider both technical skills and interpersonal dimensions."
+    },
+    {
+            "cn": "v. 识别；察觉；领悟",
+            "en": "discern",
+            "pos": "v.",
+            "example": "Experienced managers can discern potential problems early and take preventive measures to avoid crises."
+    },
+    {
+            "cn": "n. 学科；纪律；自制力 v. 管教",
+            "en": "discipline",
+            "pos": "n.",
+            "example": "Time management and self-discipline are essential for professionals to balance work and personal life."
+    },
+    {
+            "cn": "v. 派遣；发送；迅速处理 n. 急件",
+            "en": "dispatch",
+            "pos": "v.",
+            "example": "The company will dispatch a team of engineers to the client's location to resolve the technical issue."
+    },
+    {
+            "cn": "v. 区分； 辨别；使杰出",
+            "en": "distinguish",
+            "pos": "v.",
+            "example": "To stand out in the job market, candidates need to distinguish themselves with unique skills and experiences."
+    },
+    {
+            "cn": "v. 使多样化；多元化发展",
+            "en": "diversify",
+            "pos": "v.",
+            "example": "Many professionals choose to diversify their skills by learning new technologies and taking on cross-departmental projects."
+    },
+    {
+            "cn": "v. 主导；支配；占优势",
+            "en": "dominate",
+            "pos": "v.",
+            "example": "Companies that innovate continuously tend to dominate the market and gain a competitive edge over their rivals."
+    },
+    {
+            "cn": "n. 草稿； 草案；汇票 v. 起草；草拟",
+            "en": "draft",
+            "pos": "n.",
+            "example": "The legal team will draft a contract that protects the interests of both the company and its partners."
+    },
+    {
+            "cn": "n. 训练；操练；钻头 v. 钻孔；训练",
+            "en": "drill",
+            "pos": "n.",
+            "example": "Regular skill drills can help employees improve their proficiency and respond to work challenges more effectively."
+    },
+    {
+            "cn": "v. 复制；复印；重复 adj. 复制的 n. 副本",
+            "en": "duplicate",
+            "pos": "v.",
+            "example": "Employees should avoid duplicating efforts by communicating regularly and sharing progress updates with their team."
+    },
+    {
+            "cn": "adj. 动态的；充满活力的；动力的 n. 动态",
+            "en": "dynamic",
+            "pos": "adj.",
+            "example": "A dynamic work environment that encourages innovation and collaboration can boost employees' motivation and creativity."
+    },
+    {
+            "cn": "v. 详细阐述； 精心制作 adj. 详尽的",
+            "en": "elaborate",
+            "pos": "v.",
+            "example": "During the presentation, the speaker should elaborate on the key points and provide supporting evidence."
+    },
+    {
+            "cn": "v. 提升；抬高；晋升",
+            "en": "elevate",
+            "pos": "v.",
+            "example": "Consistently delivering high-quality work can elevate an employee's reputation and increase their chances of promotion."
+    },
+    {
+            "cn": "v. 体现；包含；使具体化",
+            "en": "embody",
+            "pos": "v.",
+            "example": "The company's mission statement embodies its core values and commitment to customer satisfaction."
+    },
+    {
+            "cn": "v. 授权；赋能； 使能够",
+            "en": "empower",
+            "pos": "v.",
+            "example": "Good managers empower their employees to make decisions and take ownership of their work tasks."
+    },
+    {
+            "cn": "v. 包含；涵盖；包围",
+            "en": "encompass",
+            "pos": "v.",
+            "example": "A comprehensive training program should encompass both theoretical knowledge and practical skills."
+    },
+    {
+            "cn": "v./n. 努力；尽力；尝试",
+            "en": "endeavor",
+            "pos": "v./n.",
+            "example": "Every professional should endeavor to improve their skills and keep up with the latest industry trends."
+    },
+    {
+            "cn": "v. 提高；增强；美化",
+            "en": "enhance",
+            "pos": "v.",
+            "example": "Participating in professional workshops and seminars can enhance one's resume and career prospects."
+    },
+    {
+            "cn": "v. 执行；实施；强制",
+            "en": "enforce",
+            "pos": "v.",
+            "example": "The human resources department is responsible for enforcing company policies and ensuring fair treatment of all employees."
+    },
+    {
+            "cn": "v. 丰富；充实；使富足",
+            "en": "enrich",
+            "pos": "v.",
+            "example": "Working with diverse teams can enrich one's work experience and broaden one's perspective."
+    },
+    {
+            "cn": "v. 使必要；需要；牵涉",
+            "en": "entail",
+            "pos": "v.",
+            "example": "Taking on this leadership role will entail working longer hours and making more difficult decisions."
+    },
+    {
+            "cn": "n. 企业家；创业者；主办人",
+            "en": "entrepreneur",
+            "pos": "n.",
+            "example": "Successful entrepreneurs possess a combination of creativity, resilience, and business acumen."
+    },
+    {
+            "cn": "v. 建立；设立；证实",
+            "en": "establish",
+            "pos": "v.",
+            "example": "It takes time and effort to establish a good reputation in a competitive industry."
+    },
+    {
+            "cn": "n. 房地产；财产；遗产",
+            "en": "estate",
+            "pos": "n.",
+            "example": "Many entrepreneurs invest in real estate as a way to diversify their assets and generate passive income."
+    },
+    {
+            "cn": "n. 道德准则；伦理标准；行为准则",
+            "en": "ethic",
+            "pos": "n.",
+            "example": "Adhering to a strong work ethic is essential for building trust with colleagues and clients."
+    },
+    {
+            "cn": "v. 评估；评价；估价",
+            "en": "evaluate",
+            "pos": "v.",
+            "example": "Companies regularly evaluate employee performance to identify areas for improvement and provide feedback."
+    },
+    {
+            "cn": "v. 演变；进化；逐步发展",
+            "en": "evolve",
+            "pos": "v.",
+            "example": "Career paths often evolve as professionals gain new skills and explore different opportunities."
+    },
+    {
+            "cn": "v. 超过；超出；超越",
+            "en": "exceed",
+            "pos": "v.",
+            "example": "Employees who exceed expectations are more likely to receive promotions and recognition from their employers."
+    },
+    {
+            "cn": "v. 执行；实施； 处决",
+            "en": "execute",
+            "pos": "v.",
+            "example": "The project team must execute the plan precisely to ensure that all objectives are met on time."
+    },
+    {
+            "cn": "v. 举例说明；例证；成为…的典范",
+            "en": "exemplify",
+            "pos": "v.",
+            "example": "The employee's dedication and hard work exemplify the values that the company stands for."
+    },
+    {
+            "cn": "v. 免除；豁免 adj. 被豁免的",
+            "en": "exempt",
+            "pos": "v.",
+            "example": "Employees who have worked for the company for more than 10 years are exempt from the annual performance review."
+    },
+    {
+            "cn": "v. 促进；使便利；帮助",
+            "en": "facilitate",
+            "pos": "v.",
+            "example": "Effective communication can facilitate collaboration between departments and reduce misunderstandings."
+    },
+    {
+            "cn": "n. 设施；设备；才能",
+            "en": "facility",
+            "pos": "n.",
+            "example": "The company's state-of-the-art research facilities attract top scientists from around the world."
+    },
+    {
+            "cn": "n. 方面；层面；小平面",
+            "en": "facet",
+            "pos": "n.",
+            "example": "When analyzing a business problem, it is important to consider every facet to find a comprehensive solution."
+    },
+    {
+            "cn": "adj. 可行的；切实可行的；可能的",
+            "en": "feasible",
+            "pos": "adj.",
+            "example": "Before launching a new product, the company must conduct a feasibility study to assess market demand and costs."
+    },
+    {
+            "cn": "n. 反馈；反馈意见；回复",
+            "en": "feedback",
+            "pos": "n.",
+            "example": "Constructive feedback from supervisors and colleagues is crucial for employees to improve their work performance."
+    },
+    {
+            "cn": "n. 金融；财政；资金 v. 为…提供资金",
+            "en": "finance",
+            "pos": "n.",
+            "example": "The finance department is responsible for managing the company's budget and ensuring financial stability."
+    },
+    {
+            "cn": "adj. 财政的；会计的；国库的",
+            "en": "fiscal",
+            "pos": "adj.",
+            "example": "The company's fiscal year ends in December, and annual reports are released in January."
+    },
+    {
+            "cn": "v. 波动；起伏；涨落",
+            "en": "fluctuate",
+            "pos": "v.",
+            "example": "Sales figures often fluctuate depending on the season, market conditions, and consumer behavior."
+    },
+    {
+            "cn": "v./n. 预测；预报；预估",
+            "en": "forecast",
+            "pos": "v./n.",
+            "example": "Economists forecast that the industry will experience steady growth over the next five years."
+    },
+    {
+            "cn": "v. 制定；构想；规划",
+            "en": "formulate",
+            "pos": "v.",
+            "example": "The marketing team will formulate a new strategy to target younger consumers and increase brand awareness."
+    },
+    {
+            "cn": "v. 培养；促进；抚育 adj. 收养的",
+            "en": "foster",
+            "pos": "v.",
+            "example": "Companies should foster a culture of innovation to stay competitive in the rapidly changing market."
+    },
+    {
+            "cn": "n. 框架；结构；体系",
+            "en": "framework",
+            "pos": "n.",
+            "example": "The new regulatory framework will set clear standards for businesses and protect consumer rights."
+    },
+    {
+            "cn": "n. 特许经营权；加盟店 v. 给予特许",
+            "en": "franchise",
+            "pos": "n.",
+            "example": "Many entrepreneurs choose to invest in a franchise because it provides a proven business model and brand support."
+    },
+    {
+            "cn": "adj. 基本的；根本的； 基础的 n. 基本原则",
+            "en": "fundamental",
+            "pos": "adj.",
+            "example": "A fundamental understanding of market trends is essential for making informed business decisions."
+    },
+    {
+            "cn": "v. 实现；履行； 满足",
+            "en": "fulfill",
+            "pos": "v.",
+            "example": "Employees who fulfill their responsibilities and meet deadlines are highly valued by their employers."
+    },
+    {
+            "cn": "n. 等级制度；层级；统治集团",
+            "en": "hierarchy",
+            "pos": "n.",
+            "example": "Understanding the company's hierarchy is important for new employees to know who to report to and how to communicate effectively."
+    },
+    {
+            "cn": "n. 工具； 器具 v. 实施；执行；落实",
+            "en": "implement",
+            "pos": "n.",
+            "example": "The company will implement a new remote work policy to improve employee work- life balance."
+    },
+    {
+            "cn": "v. 包含；合并；组成公司",
+            "en": "incorporate",
+            "pos": "v.",
+            "example": "The new design will incorporate customer feedback to improve usability and functionality."
+    },
+    {
+            "cn": "n. 激励； 刺激；动机 adj. 激励的",
+            "en": "incentive",
+            "pos": "n.",
+            "example": "Performance-based incentives such as bonuses and promotions can effectively motivate employees to work harder."
+    },
+    {
+            "cn": "adj. 现任的；义不容辞的 n. 现任者",
+            "en": "incumbent",
+            "pos": "adj.",
+            "example": "It is incumbent on all employees to follow safety protocols and contribute to a healthy work environment."
+    }
+];
 
     const $ = (selector) => document.querySelector(selector);
     const elements = {
-      setSelect: $("#setSelect"),
+      rangeSelect: $("#rangeSelect"),
       matchTab: $("#matchTab"),
       writeTab: $("#writeTab"),
       matchMode: $("#matchMode"),
@@ -736,7 +3642,7 @@
       writeList: $("#writeList")
     };
 
-    let currentSetKey = "toefl50";
+    let currentRangeKey = "";
     let activeMode = "match";
     let leftSelection = null;
     let rightSelection = null;
@@ -765,8 +3671,29 @@
       return word.cn.replace(/^(v\.\/n\.|v\.|n\.|adj\.|adv\.)\s*/, "");
     }
 
+    function rangesForWords(wordsList) {
+      const chunkSize = 50;
+      const ranges = [];
+      for (let start = 0; start < wordsList.length; start += chunkSize) {
+        const end = Math.min(start + chunkSize, wordsList.length);
+        ranges.push({ key: `${start}-${end - 1}`, label: `${start + 1}-${end}`, start, end });
+      }
+      return ranges;
+    }
+
+    function selectedRange() {
+      const ranges = rangesForWords(documentWords);
+      return ranges.find((range) => range.key === currentRangeKey) || ranges[0];
+    }
+
     function baseWords() {
-      return wordSets[currentSetKey].words.map((word, index) => ({ ...word, id: `${currentSetKey}-${index}` }));
+      const range = selectedRange();
+      return documentWords
+        .slice(range.start, range.end)
+        .map((word, index) => {
+          const originalIndex = range.start + index;
+          return { ...word, id: `word-${originalIndex}` };
+        });
     }
 
     function buildRoundWords() {
@@ -944,7 +3871,7 @@
       }
       const word = currentWords[writeIndex];
       elements.writeStep.textContent = `第 ${writeIndex + 1} 题 / ${currentWords.length}`;
-      elements.promptWord.textContent = `${writeIndex + 1}. ${meaningText(word)}`;
+      elements.promptWord.textContent = `${writeIndex + 1}. ${word.pos} ${meaningText(word)}`;
       elements.hintText.textContent = `词性：${word.pos}`;
       elements.answerInput.disabled = false;
       elements.checkButton.disabled = false;
@@ -973,7 +3900,7 @@
         elements.feedback.className = "feedback good";
         elements.feedback.textContent = `正确：${meaningText(word)} = ${word.en}`;
         advanceWriteIndex();
-        setTimeout(renderWriteQuestion, 520);
+        setTimeout(renderWriteQuestion, 2000);
       } else {
         stats.wrong += 1;
         elements.feedback.className = "feedback bad";
@@ -1023,22 +3950,26 @@
       switchMode(activeMode);
     }
 
-    function populateSets() {
-      Object.entries(wordSets).forEach(([key, set]) => {
+
+    function populateRanges() {
+      const ranges = rangesForWords(documentWords);
+      elements.rangeSelect.innerHTML = "";
+      ranges.forEach((range) => {
         const option = document.createElement("option");
-        option.value = key;
-        option.textContent = set.name;
-        elements.setSelect.appendChild(option);
+        option.value = range.key;
+        option.textContent = range.label;
+        elements.rangeSelect.appendChild(option);
       });
-      elements.setSelect.value = currentSetKey;
+      currentRangeKey = ranges.some((range) => range.key === currentRangeKey) ? currentRangeKey : ranges[0].key;
+      elements.rangeSelect.value = currentRangeKey;
     }
 
     elements.matchTab.addEventListener("click", () => switchMode("match"));
     elements.writeTab.addEventListener("click", () => switchMode("write"));
     elements.resetButton.addEventListener("click", () => resetAll());
     elements.shuffleButton.addEventListener("click", () => resetAll());
-    elements.setSelect.addEventListener("change", (event) => {
-      currentSetKey = event.target.value;
+    elements.rangeSelect.addEventListener("change", (event) => {
+      currentRangeKey = event.target.value;
       resetAll();
     });
     elements.checkButton.addEventListener("click", checkAnswer);
@@ -1048,7 +3979,7 @@
     });
     window.addEventListener("resize", () => requestAnimationFrame(drawLines));
 
-    populateSets();
+    populateRanges();
     resetAll();
   </script>
 </body>
