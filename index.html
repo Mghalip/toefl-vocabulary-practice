@@ -208,6 +208,25 @@
       background: var(--brand-dark);
     }
 
+    .secondary-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 54px;
+      padding: 0 16px;
+      color: var(--bad);
+      background: #fff0ed;
+      border: 1px solid #f3c5bd;
+      border-radius: 8px;
+      gap: 8px;
+      transition: transform 0.16s ease, background 0.16s ease;
+    }
+
+    .secondary-button:hover {
+      transform: translateY(-1px);
+      background: #ffe4df;
+    }
+
     .workspace {
       min-height: 560px;
       background: rgba(255, 255, 255, 0.78);
@@ -320,51 +339,45 @@
 
     .write-mode {
       display: grid;
-      grid-template-columns: minmax(260px, 0.95fr) minmax(320px, 1.1fr);
+      grid-template-columns: 1fr;
       min-height: 560px;
     }
 
     .prompt-panel {
       display: grid;
-      align-content: center;
-      gap: 20px;
-      padding: clamp(26px, 5vw, 52px);
-      background:
-        linear-gradient(rgba(9, 95, 83, 0.78), rgba(9, 95, 83, 0.78)),
-        url("data:image/svg+xml,%3Csvg width='900' height='700' viewBox='0 0 900 700' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='900' height='700' fill='%23f1d59b'/%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.34' stroke-width='3'%3E%3Cpath d='M88 166c118-72 246-70 382 6s252 82 346 17'/%3E%3Cpath d='M44 357c145-91 276-86 393 13s266 106 421 20'/%3E%3Cpath d='M119 530c170-105 317-98 441 18 76 71 157 86 243 44'/%3E%3C/g%3E%3Cg fill='%23095f53' fill-opacity='.25'%3E%3Ccircle cx='146' cy='110' r='54'/%3E%3Ccircle cx='748' cy='252' r='82'/%3E%3Ccircle cx='586' cy='548' r='65'/%3E%3C/g%3E%3C/svg%3E");
-      background-size: cover;
-      color: #fff;
+      gap: 8px;
+      padding: clamp(22px, 4vw, 38px) clamp(24px, 5vw, 52px) 0;
+      color: var(--ink);
     }
 
     .prompt-panel small {
-      color: rgba(255, 255, 255, 0.74);
+      display: none;
+      color: var(--muted);
       font-size: 14px;
     }
 
     .prompt-word {
       margin: 0;
-      font-size: clamp(44px, 8vw, 80px);
-      line-height: 1.05;
+      font-size: clamp(26px, 4vw, 42px);
+      line-height: 1.24;
       letter-spacing: 0;
       overflow-wrap: anywhere;
     }
 
     .prompt-panel p {
-      margin: 0;
-      color: rgba(255, 255, 255, 0.82);
-      line-height: 1.7;
+      display: none;
     }
 
     .answer-panel {
       display: grid;
-      align-content: center;
+      align-content: start;
       gap: 16px;
-      padding: clamp(24px, 5vw, 52px);
+      padding: clamp(20px, 4vw, 34px) clamp(24px, 5vw, 52px) clamp(24px, 5vw, 52px);
     }
 
     .answer-row {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-columns: minmax(0, 1fr) auto auto;
       gap: 10px;
     }
 
@@ -447,6 +460,18 @@
       border-color: #bce4ce;
     }
 
+    .mini-word.skipped {
+      color: #8a241d;
+      background: #fff0ed;
+      border-color: #f3c5bd;
+    }
+
+    .mini-word.current {
+      color: var(--ink);
+      background: #fff8e8;
+      border-color: #f0d38a;
+    }
+
     svg.icon {
       width: 19px;
       height: 19px;
@@ -503,10 +528,6 @@
 
       .word-card {
         min-height: 56px;
-      }
-
-      .prompt-panel {
-        min-height: 250px;
       }
 
       .answer-row {
@@ -576,6 +597,10 @@
               <button class="primary-button" id="checkButton" type="button">
                 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg>
                 检查
+              </button>
+              <button class="secondary-button" id="skipButton" type="button">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 14 0"/><path d="m13 6 6 6-6 6"/></svg>
+                跳过
               </button>
             </div>
             <div class="feedback" id="feedback">准备好了就开始。</div>
@@ -705,6 +730,7 @@
       hintText: $("#hintText"),
       answerInput: $("#answerInput"),
       checkButton: $("#checkButton"),
+      skipButton: $("#skipButton"),
       feedback: $("#feedback"),
       writeProgress: $("#writeProgress"),
       writeList: $("#writeList")
@@ -719,6 +745,7 @@
     let currentRoundWords = [];
     let writeIndex = 0;
     let writeDone = new Set();
+    let writeSkipped = new Set();
     let stats = { right: 0, wrong: 0 };
 
     function shuffle(items) {
@@ -751,13 +778,29 @@
       return currentRoundWords;
     }
 
+    function processedWriteCount() {
+      return new Set([...writeDone, ...writeSkipped]).size;
+    }
+
+    function isWriteProcessed(index) {
+      return writeDone.has(index) || writeSkipped.has(index);
+    }
+
+    function advanceWriteIndex() {
+      const currentWords = words();
+      if (processedWriteCount() >= currentWords.length) return;
+      do {
+        writeIndex = (writeIndex + 1) % currentWords.length;
+      } while (isWriteProcessed(writeIndex));
+    }
+
     function updateStats() {
       const total = words().length;
-      const done = activeMode === "match" ? matchedIds.size : writeDone.size;
+      const done = activeMode === "match" ? matchedIds.size : processedWriteCount();
       elements.rightCount.textContent = stats.right;
       elements.wrongCount.textContent = stats.wrong;
       elements.doneCount.textContent = `${done}/${total}`;
-      elements.writeProgress.style.width = `${Math.round((writeDone.size / total) * 100)}%`;
+      elements.writeProgress.style.width = `${Math.round((processedWriteCount() / total) * 100)}%`;
     }
 
     function clearSelections() {
@@ -870,7 +913,10 @@
       elements.writeList.innerHTML = "";
       words().forEach((word, index) => {
         const item = document.createElement("div");
-        item.className = `mini-word${writeDone.has(index) ? " done" : ""}`;
+        item.className = "mini-word";
+        if (writeDone.has(index)) item.classList.add("done");
+        if (writeSkipped.has(index)) item.classList.add("skipped");
+        if (index === writeIndex && !isWriteProcessed(index)) item.classList.add("current");
         item.textContent = `${index + 1}. ${meaningText(word)}`;
         elements.writeList.appendChild(item);
       });
@@ -878,13 +924,14 @@
 
     function renderWriteQuestion() {
       const currentWords = words();
-      if (writeDone.size === currentWords.length) {
+      if (processedWriteCount() === currentWords.length) {
         elements.writeStep.textContent = "已完成";
         elements.promptWord.textContent = "全部答完";
         elements.hintText.textContent = "可以重开或换一组词继续练。";
         elements.answerInput.value = "";
         elements.answerInput.disabled = true;
         elements.checkButton.disabled = true;
+        elements.skipButton.disabled = true;
         elements.feedback.className = "feedback good";
         elements.feedback.textContent = "这一轮完成了。";
         updateStats();
@@ -892,15 +939,16 @@
         return;
       }
 
-      while (writeDone.has(writeIndex)) {
-        writeIndex = (writeIndex + 1) % currentWords.length;
+      while (isWriteProcessed(writeIndex)) {
+        advanceWriteIndex();
       }
       const word = currentWords[writeIndex];
-      elements.writeStep.textContent = `第 ${writeDone.size + 1} 题 / ${currentWords.length}`;
-      elements.promptWord.textContent = meaningText(word);
+      elements.writeStep.textContent = `第 ${writeIndex + 1} 题 / ${currentWords.length}`;
+      elements.promptWord.textContent = `${writeIndex + 1}. ${meaningText(word)}`;
       elements.hintText.textContent = `词性：${word.pos}`;
       elements.answerInput.disabled = false;
       elements.checkButton.disabled = false;
+      elements.skipButton.disabled = false;
       elements.answerInput.value = "";
       elements.feedback.className = "feedback";
       elements.feedback.textContent = "输入对应英文后检查。";
@@ -924,7 +972,7 @@
         writeDone.add(writeIndex);
         elements.feedback.className = "feedback good";
         elements.feedback.textContent = `正确：${meaningText(word)} = ${word.en}`;
-        writeIndex = (writeIndex + 1) % currentWords.length;
+        advanceWriteIndex();
         setTimeout(renderWriteQuestion, 520);
       } else {
         stats.wrong += 1;
@@ -932,6 +980,17 @@
         elements.feedback.textContent = `再想想。注意词性：${word.pos}`;
       }
       updateStats();
+    }
+
+    function skipAnswer() {
+      const currentWords = words();
+      const word = currentWords[writeIndex];
+      writeSkipped.add(writeIndex);
+      stats.wrong += 1;
+      elements.feedback.className = "feedback bad";
+      elements.feedback.textContent = `已跳过：${meaningText(word)}`;
+      advanceWriteIndex();
+      renderWriteQuestion();
     }
 
     function switchMode(mode) {
@@ -958,6 +1017,7 @@
       matches = [];
       writeIndex = 0;
       writeDone = new Set();
+      writeSkipped = new Set();
       renderMatch();
       renderWriteQuestion();
       switchMode(activeMode);
@@ -982,6 +1042,7 @@
       resetAll();
     });
     elements.checkButton.addEventListener("click", checkAnswer);
+    elements.skipButton.addEventListener("click", skipAnswer);
     elements.answerInput.addEventListener("keydown", (event) => {
       if (event.key === "Enter") checkAnswer();
     });
