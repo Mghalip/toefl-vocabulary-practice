@@ -302,6 +302,11 @@
       color: rgba(255, 255, 255, 0.76);
     }
 
+    .word-card.removing {
+      transform: scale(0.96);
+      opacity: 0;
+    }
+
     .word-card.wrong {
       animation: shake 0.28s ease;
       border-color: var(--bad);
@@ -804,13 +809,22 @@
       if (!leftSelection || !rightSelection) return;
       if (leftSelection.dataset.id === rightSelection.dataset.id) {
         const matchedId = leftSelection.dataset.id;
+        const matchedLeft = leftSelection;
+        const matchedRight = rightSelection;
         matchedIds.add(matchedId);
-        matches.push({ id: matchedId, left: leftSelection, right: rightSelection });
-        leftSelection.classList.add("correct");
-        rightSelection.classList.add("correct");
+        matchedLeft.classList.add("correct");
+        matchedRight.classList.add("correct");
         stats.right += 1;
         clearSelections();
-        drawLines();
+        setTimeout(() => {
+          matchedLeft.classList.add("removing");
+          matchedRight.classList.add("removing");
+        }, 140);
+        setTimeout(() => {
+          matchedLeft.remove();
+          matchedRight.remove();
+          drawLines();
+        }, 330);
       } else {
         stats.wrong += 1;
         leftSelection.classList.add("wrong");
