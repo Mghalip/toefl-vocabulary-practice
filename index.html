@@ -711,6 +711,7 @@
     let rightSelection = null;
     let matchedIds = new Set();
     let matches = [];
+    let currentRoundWords = [];
     let writeIndex = 0;
     let writeDone = new Set();
     let stats = { right: 0, wrong: 0 };
@@ -732,8 +733,17 @@
       return word.cn.replace(/^(v\.\/n\.|v\.|n\.|adj\.|adv\.)\s*/, "");
     }
 
-    function words() {
+    function baseWords() {
       return wordSets[currentSetKey].words.map((word, index) => ({ ...word, id: `${currentSetKey}-${index}` }));
+    }
+
+    function buildRoundWords() {
+      currentRoundWords = shuffle(baseWords());
+    }
+
+    function words() {
+      if (!currentRoundWords.length) buildRoundWords();
+      return currentRoundWords;
     }
 
     function updateStats() {
@@ -929,6 +939,7 @@
 
     function resetAll({ keepStats = false } = {}) {
       if (!keepStats) stats = { right: 0, wrong: 0 };
+      buildRoundWords();
       matchedIds = new Set();
       matches = [];
       writeIndex = 0;
@@ -951,11 +962,7 @@
     elements.matchTab.addEventListener("click", () => switchMode("match"));
     elements.writeTab.addEventListener("click", () => switchMode("write"));
     elements.resetButton.addEventListener("click", () => resetAll());
-    elements.shuffleButton.addEventListener("click", () => {
-      renderMatch();
-      renderWriteQuestion();
-      updateStats();
-    });
+    elements.shuffleButton.addEventListener("click", () => resetAll());
     elements.setSelect.addEventListener("change", (event) => {
       currentSetKey = event.target.value;
       resetAll();
