@@ -857,7 +857,7 @@
       words().forEach((word, index) => {
         const item = document.createElement("div");
         item.className = `mini-word${writeDone.has(index) ? " done" : ""}`;
-        item.textContent = `${meaningText(word)} / ${word.en}`;
+        item.textContent = `${index + 1}. ${meaningText(word)}`;
         elements.writeList.appendChild(item);
       });
     }
@@ -884,7 +884,7 @@
       const word = currentWords[writeIndex];
       elements.writeStep.textContent = `第 ${writeDone.size + 1} 题 / ${currentWords.length}`;
       elements.promptWord.textContent = meaningText(word);
-      elements.hintText.textContent = `${word.pos}  ${word.example}`;
+      elements.hintText.textContent = `词性：${word.pos}`;
       elements.answerInput.disabled = false;
       elements.checkButton.disabled = false;
       elements.answerInput.value = "";
@@ -915,7 +915,7 @@
       } else {
         stats.wrong += 1;
         elements.feedback.className = "feedback bad";
-        elements.feedback.textContent = `再想想。提示：${word.en.slice(0, 1)}${"·".repeat(Math.max(1, word.en.length - 1))}`;
+        elements.feedback.textContent = `再想想。注意词性：${word.pos}`;
       }
       updateStats();
     }
